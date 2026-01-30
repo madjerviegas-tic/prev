@@ -4,128 +4,851 @@
   <meta charset="UTF-8" />
   <title>Sistema de Preventiva de Computadores</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+
   <style>
-    body { font-family: Arial, sans-serif; margin: 20px; }
-    .hidden { display: none; }
-    .card { border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; border-radius: 4px; }
-    .flex { display: flex; gap: 10px; flex-wrap: wrap; }
-    label { display: block; margin-top: 5px; }
-    input, select { width: 100%; padding: 4px; }
-    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-    th, td { border: 1px solid #ccc; padding: 5px; font-size: 12px; }
-    th { background: #eee; }
-    button { margin-top: 10px; padding: 6px 10px; cursor: pointer; }
+    :root {
+      --bg: #0f172a;
+      --bg-soft: #111827;
+      --card: #020617;
+      --card-soft: #020617;
+      --accent: #38bdf8;
+      --accent-soft: rgba(56, 189, 248, 0.1);
+      --accent-strong: #0ea5e9;
+      --border: #1f2937;
+      --text: #e5e7eb;
+      --text-soft: #9ca3af;
+      --danger: #ef4444;
+      --danger-soft: rgba(239, 68, 68, 0.1);
+      --success: #22c55e;
+      --success-soft: rgba(34, 197, 94, 0.1);
+      --radius: 10px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top, #0b1120 0, #020617 45%, #000 100%);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* HEADER */
+
+    header {
+      background: linear-gradient(to right, #020617, #0b1120);
+      border-bottom: 1px solid #1f2937;
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-logo {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      background: radial-gradient(circle at 30% 20%, #38bdf8, #0ea5e9 40%, #1e293b 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      color: white;
+      font-size: 18px;
+    }
+
+    .brand-text-title {
+      font-weight: 600;
+      font-size: 16px;
+    }
+
+    .brand-text-sub {
+      font-size: 11px;
+      color: var(--text-soft);
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 13px;
+    }
+
+    .pill {
+      background: var(--accent-soft);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      color: var(--accent-strong);
+    }
+
+    .user-pill {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(15,23,42,0.9);
+      border-radius: 999px;
+      border: 1px solid #1f2937;
+      padding: 4px 8px 4px 4px;
+    }
+
+    .user-avatar {
+      width: 22px;
+      height: 22px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, #38bdf8, #0ea5e9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .user-name {
+      font-size: 12px;
+    }
+
+    .user-role {
+      font-size: 10px;
+      color: var(--accent-strong);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .btn-outline {
+      background: transparent;
+      border-radius: 999px;
+      padding: 4px 10px;
+      font-size: 11px;
+      border: 1px solid #374151;
+      color: var(--text-soft);
+      cursor: pointer;
+    }
+
+    .btn-outline:hover {
+      background: rgba(15, 23, 42, 0.9);
+    }
+
+    /* LAYOUT */
+
+    .layout {
+      display: flex;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .sidebar {
+      width: 220px;
+      background: rgba(15,23,42,0.95);
+      border-right: 1px solid #1f2937;
+      padding: 12px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .sidebar-title {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-soft);
+      margin-bottom: 4px;
+      padding: 0 6px;
+    }
+
+    .nav-btn {
+      width: 100%;
+      text-align: left;
+      padding: 8px 9px;
+      border-radius: 8px;
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--text-soft);
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+    }
+
+    .nav-btn span.icon {
+      width: 18px;
+      display: inline-flex;
+      justify-content: center;
+      opacity: 0.8;
+    }
+
+    .nav-btn.active {
+      background: linear-gradient(to right, #0f172a, #020617);
+      border-color: rgba(56, 189, 248, 0.7);
+      color: var(--accent-strong);
+    }
+
+    .nav-btn:hover:not(.active) {
+      background: rgba(15,23,42,0.9);
+    }
+
+    .sidebar-footer {
+      margin-top: auto;
+      font-size: 10px;
+      color: #4b5563;
+      padding: 4px 6px;
+    }
+
+    .content {
+      flex: 1;
+      padding: 16px 18px 24px;
+      overflow-y: auto;
+    }
+
+    /* LOGIN CARD */
+
+    .center-wrapper {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: calc(100vh - 60px);
+    }
+
+    .login-card {
+      width: 100%;
+      max-width: 380px;
+      background: radial-gradient(circle at top, #0f172a 0, #020617 60%, #000 100%);
+      border-radius: 16px;
+      border: 1px solid rgba(55,65,81,0.9);
+      box-shadow: 0 18px 40px rgba(15,23,42,0.9);
+      padding: 22px 20px 20px;
+    }
+
+    .login-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .login-subtitle {
+      font-size: 12px;
+      color: var(--text-soft);
+      margin-bottom: 16px;
+    }
+
+    label {
+      display: block;
+      font-size: 12px;
+      margin-bottom: 4px;
+    }
+
+    .input {
+      width: 100%;
+      padding: 8px 9px;
+      border-radius: 8px;
+      border: 1px solid #374151;
+      background: rgba(15,23,42,0.9);
+      color: var(--text);
+      font-size: 13px;
+    }
+
+    .input:focus {
+      outline: none;
+      border-color: var(--accent-strong);
+      box-shadow: 0 0 0 1px rgba(56,189,248,0.4);
+    }
+
+    .btn-primary {
+      width: 100%;
+      margin-top: 12px;
+      padding: 9px 10px;
+      border-radius: 999px;
+      border: none;
+      background: linear-gradient(to right, var(--accent), var(--accent-strong));
+      color: white;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .btn-primary:hover {
+      filter: brightness(1.1);
+    }
+
+    .login-message {
+      margin-top: 10px;
+      font-size: 12px;
+      color: var(--danger);
+      min-height: 14px;
+    }
+
+    /* DASHBOARD */
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .page-title {
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .page-subtitle {
+      font-size: 12px;
+      color: var(--text-soft);
+    }
+
+    .stats-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .stat-card {
+      flex: 1;
+      min-width: 150px;
+      background: radial-gradient(circle at top left, #0b1120 0, #020617 60%);
+      border-radius: var(--radius);
+      padding: 10px 10px;
+      border: 1px solid #1f2937;
+    }
+
+    .stat-label {
+      font-size: 11px;
+      color: var(--text-soft);
+    }
+
+    .stat-value {
+      margin-top: 4px;
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .stat-note {
+      font-size: 10px;
+      margin-top: 3px;
+      color: var(--text-soft);
+    }
+
+    /* CARDS */
+
+    .card {
+      background: rgba(15,23,42,0.95);
+      border-radius: var(--radius);
+      border: 1px solid #1f2937;
+      padding: 12px 12px 10px;
+      margin-bottom: 10px;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .card-title {
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .card-subtitle {
+      font-size: 11px;
+      color: var(--text-soft);
+    }
+
+    .chip {
+      font-size: 10px;
+      padding: 3px 7px;
+      border-radius: 999px;
+      background: rgba(15,23,42,0.9);
+      border: 1px solid #374151;
+      color: var(--text-soft);
+    }
+
+    .chip-pill {
+      background: var(--accent-soft);
+      color: var(--accent-strong);
+      border-color: rgba(56,189,248,0.4);
+    }
+
+    /* GRID */
+
+    .flex {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .col {
+      flex: 1;
+      min-width: 160px;
+    }
+
+    /* TABLE */
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 6px;
+      font-size: 12px;
+    }
+
+    th, td {
+      padding: 6px 6px;
+      border-bottom: 1px solid #111827;
+    }
+
+    th {
+      text-align: left;
+      font-size: 11px;
+      color: var(--text-soft);
+      background: rgba(15,23,42,0.9);
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+
+    tbody tr:hover {
+      background: rgba(31,41,55,0.5);
+    }
+
+    input[type="checkbox"] {
+      accent-color: var(--accent-strong);
+    }
+
+    /* BUTTONS SMALL */
+
+    .btn-sm {
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: none;
+      background: #111827;
+      color: var(--text-soft);
+      font-size: 11px;
+      cursor: pointer;
+    }
+
+    .btn-sm:hover {
+      background: #020617;
+    }
+
+    .btn-sm-primary {
+      background: var(--accent-soft);
+      color: var(--accent-strong);
+      border: 1px solid rgba(56,189,248,0.5);
+    }
+
+    /* TEXT AREAS */
+
+    pre {
+      background: #020617;
+      border-radius: 8px;
+      padding: 8px;
+      font-size: 11px;
+      color: #e5e7eb;
+      max-height: 200px;
+      overflow: auto;
+      border: 1px solid #111827;
+    }
+
+    /* TABS (PÁGINAS) */
+
+    .page-section {
+      display: none;
+    }
+
+    .page-section.active {
+      display: block;
+    }
+
+    /* TOAST */
+
+    .toast {
+      position: fixed;
+      right: 16px;
+      bottom: 16px;
+      max-width: 260px;
+      padding: 10px 11px;
+      font-size: 12px;
+      border-radius: 10px;
+      border: 1px solid #16a34a;
+      background: var(--success-soft);
+      color: var(--success);
+      box-shadow: 0 12px 30px rgba(0,0,0,0.5);
+      display: none;
+      z-index: 50;
+    }
+
+    .toast.error {
+      border-color: var(--danger);
+      background: var(--danger-soft);
+      color: var(--danger);
+    }
+
+    .toast.show {
+      display: block;
+    }
+
+    @media (max-width: 800px) {
+      .layout {
+        flex-direction: column;
+      }
+      .sidebar {
+        width: 100%;
+        flex-direction: row;
+        overflow-x: auto;
+      }
+      .sidebar-title, .sidebar-footer {
+        display: none;
+      }
+    }
   </style>
 </head>
 <body>
-  <h1>Sistema de Preventiva de Computadores</h1>
+  <header>
+    <div class="brand">
+      <div class="brand-logo">IT</div>
+      <div>
+        <div class="brand-text-title">Sistema de Preventiva</div>
+        <div class="brand-text-sub">Controle de manutenções de computadores</div>
+      </div>
+    </div>
 
-  <div id="loginSection">
-    <h2>Login</h2>
-    <label>Email:<br><input type="email" id="loginEmail" /></label>
-    <label>Senha:<br><input type="password" id="loginPassword" /></label>
-    <button onclick="login()">Entrar</button>
-    <p id="loginMessage"></p>
-  </div>
-
-  <div id="appSection" class="hidden">
-    <p>Logado como: <span id="userName"></span> (<span id="userRole"></span>)</p>
-    <button onclick="logout()">Sair</button>
-
-    <hr />
-
-    <h2>Computadores</h2>
-    <div class="card">
-      <h3>Filtros</h3>
-      <div class="flex">
-        <div style="flex:1">
-          <label>Busca (nome/serial)<br><input id="fSearch" /></label>
-        </div>
-        <div style="flex:1">
-          <label>Localização<br><input id="fLocation" /></label>
-        </div>
-        <div style="flex:1">
-          <label>Sistema operacional<br><input id="fOs" /></label>
-        </div>
-        <div style="flex:1">
-          <label>Próx. preventiva de<br><input type="date" id="fNextFrom" /></label>
-          <label>Próx. preventiva até<br><input type="date" id="fNextTo" /></label>
+    <div class="header-right" id="headerRightLogged" style="display:none;">
+      <div class="pill">Ambiente Web</div>
+      <div class="user-pill">
+        <div class="user-avatar" id="userAvatar">A</div>
+        <div>
+          <div class="user-name" id="userNameHeader">Admin</div>
+          <div class="user-role" id="userRoleHeader">ADMIN</div>
         </div>
       </div>
-      <button onclick="loadComputers()">Buscar</button>
+      <button class="btn-outline" onclick="logout()">Sair</button>
     </div>
 
-    <div class="card">
-      <h3>Lista de computadores</h3>
-      <table>
-        <thead>
-          <tr>
-            <th><input type="checkbox" id="selectAll" onclick="toggleSelectAll(this)" /></th>
-            <th>ID</th>
-            <th>Nome</th>
-            <th>Localização</th>
-            <th>SO</th>
-            <th>Última</th>
-            <th>Próxima</th>
-          </tr>
-        </thead>
-        <tbody id="computersTableBody"></tbody>
-      </table>
+    <div class="header-right" id="headerRightGuest">
+      <span class="pill">Acesso restrito</span>
     </div>
+  </header>
 
-    <div class="card" id="bulkSection">
-      <h3>Edição em massa (ADMIN)</h3>
-      <p>Aplicado aos computadores selecionados.</p>
-      <div class="flex">
-        <div style="flex:1">
-          <label>Fabricante<br><input id="bulkManufacturer" /></label>
-        </div>
-        <div style="flex:1">
-          <label>Localização<br><input id="bulkLocation" /></label>
-        </div>
-        <div style="flex:1">
-          <label>SO<br><input id="bulkOs" /></label>
-        </div>
-        <div style="flex:1">
-          <label>Última preventiva<br><input type="date" id="bulkLast" /></label>
-          <label>Próx. preventiva<br><input type="date" id="bulkNext" /></label>
-        </div>
+  <!-- LOGIN -->
+
+  <div id="loginSection" class="center-wrapper">
+    <div class="login-card">
+      <div class="login-title">Entrar no sistema</div>
+      <div class="login-subtitle">
+        Use seu usuário para acessar o painel de preventivas.
+        <br/>Se este é o primeiro acesso, crie o admin pelo endpoint <code>/api/auth/init-admin</code>.
       </div>
-      <button onclick="bulkUpdate()">Aplicar</button>
-      <p id="bulkMessage"></p>
-    </div>
 
-    <div class="card" id="importSection">
-      <h3>Importar CSV (ADMIN)</h3>
-      <input type="file" id="csvFile" />
-      <button onclick="importCsv()">Importar</button>
-      <pre id="importResult"></pre>
-    </div>
+      <div style="margin-bottom:10px;">
+        <label for="loginEmail">Email</label>
+        <input type="email" id="loginEmail" class="input" placeholder="admin@empresa.com" />
+      </div>
+      <div>
+        <label for="loginPassword">Senha</label>
+        <input type="password" id="loginPassword" class="input" placeholder="••••••••" />
+      </div>
 
-    <div class="card">
-      <h3>Relatório – preventivas pendentes</h3>
-      <label>Listar até a data:<br><input type="date" id="rUntil" /></label>
-      <button onclick="loadPending()">Carregar</button>
-      <pre id="pendingResult"></pre>
+      <button class="btn-primary" onclick="login()">Entrar</button>
+      <div class="login-message" id="loginMessage"></div>
     </div>
   </div>
+
+  <!-- APP -->
+
+  <div id="appSection" class="layout" style="display:none;">
+    <aside class="sidebar">
+      <div>
+        <div class="sidebar-title">Navegação</div>
+        <button class="nav-btn active" data-page="page-computers" onclick="changePage(this, 'page-computers')">
+          <span class="icon">💻</span>
+          <span>Computadores</span>
+        </button>
+        <button class="nav-btn" data-page="page-import" onclick="changePage(this, 'page-import')">
+          <span class="icon">📥</span>
+          <span>Importação CSV</span>
+        </button>
+        <button class="nav-btn" data-page="page-reports" onclick="changePage(this, 'page-reports')">
+          <span class="icon">📊</span>
+          <span>Relatórios</span>
+        </button>
+      </div>
+
+      <div class="sidebar-footer">
+        v1.0 • Preventiva de computadores<br/>
+        Render + Node + PostgreSQL
+      </div>
+    </aside>
+
+    <main class="content">
+      <!-- Página: Computadores -->
+      <section id="page-computers" class="page-section active">
+        <div class="page-header">
+          <div>
+            <div class="page-title">Computadores cadastrados</div>
+            <div class="page-subtitle">Filtros, listagem e edição em massa</div>
+          </div>
+          <div class="chip chip-pill">Área principal</div>
+        </div>
+
+        <div class="stats-row">
+          <div class="stat-card">
+            <div class="stat-label">Total de computadores (página atual)</div>
+            <div class="stat-value" id="statTotalComputers">–</div>
+            <div class="stat-note">Atualizado ao carregar a lista</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Próx. preventiva filtrada</div>
+            <div class="stat-value" id="statNextFilter">–</div>
+            <div class="stat-note">Baseado no filtro de datas aplicado</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Filtros</div>
+              <div class="card-subtitle">Use os campos abaixo para refinar a busca</div>
+            </div>
+            <button class="btn-sm btn-sm-primary" onclick="clearFilters()">Limpar filtros</button>
+          </div>
+
+          <div class="flex">
+            <div class="col">
+              <label>Busca (nome ou nº de série)</label>
+              <input id="fSearch" class="input" placeholder="Ex.: SN12345 ou Computador 001" />
+            </div>
+            <div class="col">
+              <label>Localização</label>
+              <input id="fLocation" class="input" placeholder="Ex.: Escritório A" />
+            </div>
+            <div class="col">
+              <label>Sistema operacional</label>
+              <input id="fOs" class="input" placeholder="Ex.: Windows 10" />
+            </div>
+            <div class="col">
+              <label>Próx. preventiva de</label>
+              <input type="date" id="fNextFrom" class="input" />
+            </div>
+            <div class="col">
+              <label>Próx. preventiva até</label>
+              <input type="date" id="fNextTo" class="input" />
+            </div>
+          </div>
+
+          <div style="margin-top:10px; display:flex; gap:8px; justify-content:flex-end;">
+            <button class="btn-sm" onclick="clearFilters()">Limpar</button>
+            <button class="btn-sm btn-sm-primary" onclick="loadComputers()">Buscar</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Lista de computadores</div>
+              <div class="card-subtitle">Selecione registros para aplicar edição em massa</div>
+            </div>
+            <span class="chip"><span id="countSelected">0</span> selecionados</span>
+          </div>
+
+          <div style="max-height: 320px; overflow:auto; border-radius:8px; border:1px solid #111827;">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width:32px;"><input type="checkbox" id="selectAll" onclick="toggleSelectAll(this)" /></th>
+                  <th style="width:40px;">ID</th>
+                  <th>Nome</th>
+                  <th>Localização</th>
+                  <th>SO</th>
+                  <th>Última</th>
+                  <th>Próxima</th>
+                </tr>
+              </thead>
+              <tbody id="computersTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card" id="bulkSection">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Edição em massa</div>
+              <div class="card-subtitle">Aplicada aos computadores selecionados (ADMIN)</div>
+            </div>
+          </div>
+
+          <div class="flex">
+            <div class="col">
+              <label>Fabricante</label>
+              <input id="bulkManufacturer" class="input" placeholder="Ex.: Dell" />
+            </div>
+            <div class="col">
+              <label>Localização</label>
+              <input id="bulkLocation" class="input" placeholder="Ex.: Recepção" />
+            </div>
+            <div class="col">
+              <label>Sistema operacional</label>
+              <input id="bulkOs" class="input" placeholder="Ex.: Windows 11" />
+            </div>
+            <div class="col">
+              <label>Última preventiva</label>
+              <input type="date" id="bulkLast" class="input" />
+            </div>
+            <div class="col">
+              <label>Próx. preventiva</label>
+              <input type="date" id="bulkNext" class="input" />
+            </div>
+          </div>
+
+          <button class="btn-sm btn-sm-primary" style="margin-top:10px;" onclick="bulkUpdate()">Aplicar edição em massa</button>
+          <div id="bulkMessage" style="font-size:12px; margin-top:6px; color:var(--text-soft);"></div>
+        </div>
+      </section>
+
+      <!-- Página: Importação CSV -->
+      <section id="page-import" class="page-section">
+        <div class="page-header">
+          <div>
+            <div class="page-title">Importação de computadores (CSV)</div>
+            <div class="page-subtitle">Carregue vários registros de uma vez (ADMIN)</div>
+          </div>
+          <div class="chip chip-pill">Ferramenta de massa</div>
+        </div>
+
+        <div class="card" id="importSection">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Arquivo CSV</div>
+              <div class="card-subtitle">
+                Formato esperado:
+                <code>nome, fabricante, localizacao, numero_serie, sistema_operacional, data_ultima_preventiva, data_proxima_preventiva</code>
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-bottom:8px;">
+            <input type="file" id="csvFile" />
+          </div>
+          <button class="btn-sm btn-sm-primary" onclick="importCsv()">Importar arquivo</button>
+
+          <div style="margin-top:10px;">
+            <label style="font-size:11px;">Resultado da importação</label>
+            <pre id="importResult">{}</pre>
+          </div>
+        </div>
+      </section>
+
+      <!-- Página: Relatórios -->
+      <section id="page-reports" class="page-section">
+        <div class="page-header">
+          <div>
+            <div class="page-title">Relatórios de preventivas</div>
+            <div class="page-subtitle">Acompanhe pendências e estatísticas básicas</div>
+          </div>
+          <div class="chip chip-pill">Visão de gestão</div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Preventivas pendentes</div>
+              <div class="card-subtitle">
+                Liste equipamentos com preventiva vencida ou a vencer até a data selecionada.
+              </div>
+            </div>
+          </div>
+
+          <div class="flex">
+            <div class="col" style="max-width:220px;">
+              <label>Listar até a data</label>
+              <input type="date" id="rUntil" class="input" />
+            </div>
+          </div>
+
+          <button class="btn-sm btn-sm-primary" style="margin-top:10px;" onclick="loadPending()">Gerar relatório</button>
+
+          <div style="margin-top:10px;">
+            <pre id="pendingResult">{}</pre>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div id="toast" class="toast"></div>
 
   <script>
-    // API já apontando para o subdomínio da Render
+    // ====== CONFIGURAÇÃO DA API ======
+    // Ajuste aqui se a URL da API mudar
     const API_BASE = "https://prev-l0mb.onrender.com/api";
 
     let token = null;
     let currentUser = null;
     let computers = [];
 
+    // ====== UTIL ======
+    function showToast(message, type = "success") {
+      const el = document.getElementById('toast');
+      el.textContent = message;
+      el.className = 'toast ' + (type === 'error' ? 'error' : '');
+      el.classList.add('show');
+      setTimeout(() => {
+        el.classList.remove('show');
+      }, 3500);
+    }
+
+    function changePage(btn, pageId) {
+      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      document.querySelectorAll('.page-section').forEach(sec => sec.classList.remove('active'));
+      document.getElementById(pageId).classList.add('active');
+    }
+
+    function updateSelectedCount() {
+      const count = Array.from(document.querySelectorAll('.rowCheck'))
+        .filter(c => c.checked).length;
+      document.getElementById('countSelected').innerText = count;
+    }
+
+    function initialAvatarText(name) {
+      if (!name) return '?';
+      return name.trim().charAt(0).toUpperCase();
+    }
+
+    // ====== AUTENTICAÇÃO ======
     function setAuth(authToken, user) {
       token = authToken;
       currentUser = user;
-      if (token) {
-        document.getElementById('loginSection').classList.add('hidden');
-        document.getElementById('appSection').classList.remove('hidden');
-        document.getElementById('userName').innerText = user.name;
-        document.getElementById('userRole').innerText = user.role;
+
+      if (token && user) {
+        document.getElementById('loginSection').style.display = 'none';
+        document.getElementById('appSection').style.display = 'flex';
+
+        document.getElementById('headerRightGuest').style.display = 'none';
+        document.getElementById('headerRightLogged').style.display = 'flex';
+
+        document.getElementById('userNameHeader').innerText = user.name;
+        document.getElementById('userRoleHeader').innerText = user.role || '';
+        document.getElementById('userAvatar').innerText = initialAvatarText(user.name);
 
         const isAdmin = user.role === 'ADMIN';
         document.getElementById('bulkSection').style.display = isAdmin ? 'block' : 'none';
@@ -133,19 +856,25 @@
 
         loadComputers();
       } else {
-        document.getElementById('loginSection').classList.remove('hidden');
-        document.getElementById('appSection').classList.add('hidden');
+        document.getElementById('loginSection').style.display = 'flex';
+        document.getElementById('appSection').style.display = 'none';
+
+        document.getElementById('headerRightGuest').style.display = 'flex';
+        document.getElementById('headerRightLogged').style.display = 'none';
       }
     }
 
     function logout() {
       setAuth(null, null);
+      showToast("Sessão encerrada.", "success");
     }
 
     async function login() {
       const email = document.getElementById('loginEmail').value;
       const password = document.getElementById('loginPassword').value;
-      document.getElementById('loginMessage').innerText = "";
+      const msgEl = document.getElementById('loginMessage');
+      msgEl.innerText = "";
+
       try {
         const res = await fetch(API_BASE + "/auth/login", {
           method: "POST",
@@ -154,14 +883,27 @@
         });
         const data = await res.json();
         if (!res.ok) {
-          document.getElementById('loginMessage').innerText = data.message || "Erro no login";
+          msgEl.innerText = data.message || "Erro no login";
+          showToast(data.message || "Erro no login", "error");
           return;
         }
+        showToast("Login realizado com sucesso!", "success");
         setAuth(data.token, data.user);
       } catch (err) {
         console.error(err);
-        document.getElementById('loginMessage').innerText = "Erro ao conectar ao servidor";
+        msgEl.innerText = "Erro ao conectar ao servidor";
+        showToast("Erro ao conectar ao servidor", "error");
       }
+    }
+
+    // ====== COMPUTADORES ======
+    function clearFilters() {
+      document.getElementById('fSearch').value = "";
+      document.getElementById('fLocation').value = "";
+      document.getElementById('fOs').value = "";
+      document.getElementById('fNextFrom').value = "";
+      document.getElementById('fNextTo').value = "";
+      loadComputers();
     }
 
     async function loadComputers() {
@@ -187,13 +929,19 @@
         const data = await res.json();
         if (!res.ok) {
           alert(data.message || "Erro ao carregar computadores");
+          showToast(data.message || "Erro ao carregar computadores", "error");
           return;
         }
         computers = data.data;
         renderComputers();
+
+        // Atualiza stats no topo
+        document.getElementById('statTotalComputers').innerText = data.total ?? computers.length;
+        document.getElementById('statNextFilter').innerText = next_from || next_to ? "Filtrado" : "Sem filtro";
       } catch (err) {
         console.error(err);
         alert("Erro ao conectar ao servidor");
+        showToast("Erro ao conectar ao servidor", "error");
       }
     }
 
@@ -213,16 +961,23 @@
         `;
         tbody.appendChild(tr);
       });
+
+      document.querySelectorAll('.rowCheck').forEach(chk => {
+        chk.addEventListener('change', updateSelectedCount);
+      });
+      updateSelectedCount();
     }
 
     function toggleSelectAll(checkbox) {
       const checks = document.querySelectorAll('.rowCheck');
       checks.forEach((c) => (c.checked = checkbox.checked));
+      updateSelectedCount();
     }
 
     async function bulkUpdate() {
       if (!token || !currentUser || currentUser.role !== 'ADMIN') {
         alert("Apenas ADMIN pode usar edição em massa.");
+        showToast("Apenas ADMIN pode usar edição em massa.", "error");
         return;
       }
       const ids = Array.from(document.querySelectorAll('.rowCheck'))
@@ -231,6 +986,7 @@
 
       if (ids.length === 0) {
         alert("Selecione ao menos um computador.");
+        showToast("Selecione ao menos um computador.", "error");
         return;
       }
 
@@ -249,10 +1005,12 @@
 
       if (Object.keys(fields).length === 0) {
         alert("Informe ao menos um campo para alterar.");
+        showToast("Informe ao menos um campo para alterar.", "error");
         return;
       }
 
-      document.getElementById('bulkMessage').innerText = "";
+      const msgEl = document.getElementById('bulkMessage');
+      msgEl.innerText = "Aplicando alterações...";
 
       try {
         const res = await fetch(API_BASE + "/computers/bulk-update", {
@@ -265,31 +1023,37 @@
         });
         const data = await res.json();
         if (!res.ok) {
-          document.getElementById('bulkMessage').innerText = data.message || "Erro no bulk update";
+          msgEl.innerText = data.message || "Erro no bulk update";
+          showToast(data.message || "Erro no bulk update", "error");
           return;
         }
-        document.getElementById('bulkMessage').innerText =
-          "Registros atualizados: " + data.updated_count;
+        msgEl.innerText = "Registros atualizados: " + data.updated_count;
+        showToast("Edição em massa concluída!", "success");
         loadComputers();
       } catch (err) {
         console.error(err);
-        document.getElementById('bulkMessage').innerText = "Erro ao conectar ao servidor";
+        msgEl.innerText = "Erro ao conectar ao servidor";
+        showToast("Erro ao conectar ao servidor", "error");
       }
     }
 
+    // ====== IMPORTAÇÃO CSV ======
     async function importCsv() {
       if (!token || !currentUser || currentUser.role !== 'ADMIN') {
         alert("Apenas ADMIN pode importar CSV.");
+        showToast("Apenas ADMIN pode importar CSV.", "error");
         return;
       }
       const fileInput = document.getElementById('csvFile');
       if (!fileInput.files[0]) {
         alert("Selecione um arquivo CSV.");
+        showToast("Selecione um arquivo CSV.", "error");
         return;
       }
       const formData = new FormData();
       formData.append("file", fileInput.files[0]);
-      document.getElementById('importResult').innerText = "Importando...";
+      const resultEl = document.getElementById('importResult');
+      resultEl.innerText = "Importando...";
 
       try {
         const res = await fetch(API_BASE + "/import/import-csv", {
@@ -299,22 +1063,29 @@
         });
         const data = await res.json();
         if (!res.ok) {
-          document.getElementById('importResult').innerText = data.message || "Erro na importação";
+          resultEl.innerText = data.message || "Erro na importação";
+          showToast(data.message || "Erro na importação", "error");
           return;
         }
-        document.getElementById('importResult').innerText = JSON.stringify(data, null, 2);
+        resultEl.innerText = JSON.stringify(data, null, 2);
+        showToast("Importação concluída!", "success");
         loadComputers();
       } catch (err) {
         console.error(err);
-        document.getElementById('importResult').innerText = "Erro ao conectar ao servidor";
+        resultEl.innerText = "Erro ao conectar ao servidor";
+        showToast("Erro ao conectar ao servidor", "error");
       }
     }
 
+    // ====== RELATÓRIOS ======
     async function loadPending() {
       if (!token) return;
       const until = document.getElementById('rUntil').value;
       const params = new URLSearchParams();
       if (until) params.append('until', until);
+
+      const resultEl = document.getElementById('pendingResult');
+      resultEl.innerText = "Carregando...";
 
       try {
         const res = await fetch(API_BASE + "/reports/preventives-pending?" + params.toString(), {
@@ -322,13 +1093,16 @@
         });
         const data = await res.json();
         if (!res.ok) {
-          document.getElementById('pendingResult').innerText = data.message || "Erro";
+          resultEl.innerText = data.message || "Erro";
+          showToast(data.message || "Erro ao gerar relatório", "error");
           return;
         }
-        document.getElementById('pendingResult').innerText = JSON.stringify(data, null, 2);
+        resultEl.innerText = JSON.stringify(data, null, 2);
+        showToast("Relatório gerado com sucesso!", "success");
       } catch (err) {
         console.error(err);
-        document.getElementById('pendingResult').innerText = "Erro ao conectar ao servidor";
+        resultEl.innerText = "Erro ao conectar ao servidor";
+        showToast("Erro ao conectar ao servidor", "error");
       }
     }
   </script>
