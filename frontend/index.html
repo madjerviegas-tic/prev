@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Sistema de Preventiva de Computadores</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    .hidden { display: none; }
+    .card { border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; border-radius: 4px; }
+    .flex { display: flex; gap: 10px; flex-wrap: wrap; }
+    label { display: block; margin-top: 5px; }
+    input, select { width: 100%; padding: 4px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { border: 1px solid #ccc; padding: 5px; font-size: 12px; }
+    th { background: #eee; }
+    button { margin-top: 10px; padding: 6px 10px; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <h1>Sistema de Preventiva de Computadores</h1>
+
+  <div id="loginSection">
+    <h2>Login</h2>
+    <label>Email:<br><input type="email" id="loginEmail" /></label>
+    <label>Senha:<br><input type="password" id="loginPassword" /></label>
+    <button onclick="login()">Entrar</button>
+    <p id="loginMessage"></p>
+  </div>
+
+  <div id="appSection" class="hidden">
+    <p>Logado como: <span id="userName"></span> (<span id="userRole"></span>)</p>
+    <button onclick="logout()">Sair</button>
+
+    <hr />
+
+    <h2>Computadores</h2>
+    <div class="card">
+      <h3>Filtros</h3>
+      <div class="flex">
+        <div style="flex:1">
+          <label>Busca (nome/serial)<br><input id="fSearch" /></label>
+        </div>
+        <div style="flex:1">
+          <label>Localização<br><input id="fLocation" /></label>
+        </div>
+        <div style="flex:1">
+          <label>Sistema operacional<br><input id="fOs" /></label>
+        </div>
+        <div style="flex:1">
+          <label>Próx. preventiva de<br><input type="date" id="fNextFrom" /></label>
+          <label>Próx. preventiva até<br><input type="date" id="fNextTo" /></label>
+        </div>
+      </div>
+      <button onclick="loadComputers()">Buscar</button>
+    </div>
+
+    <div class="card">
+      <h3>Lista de computadores</h3>
+      <table>
+        <thead>
+          <tr>
+            <th><input type="checkbox" id="selectAll" onclick="toggleSelectAll(this)" /></th>
+            <th>ID</th>
+            <th>Nome</th>
+            <th>Localização</th>
+            <th>SO</th>
+            <th>Última</th>
+            <th>Próxima</th>
+          </tr>
+        </thead>
+        <tbody id="computersTableBody"></tbody>
+      </table>
+    </div>
+
+    <div class="card" id="bulkSection">
+      <h3>Edição em massa (ADMIN)</h3>
+      <p>Aplicado aos computadores selecionados.</p>
+      <div class="flex">
+        <div style="flex:1">
+          <label>Fabricante<br><input id="bulkManufacturer" /></label>
+        </div>
+        <div style="flex:1">
+          <label>Localização<br><input id="bulkLocation" /></label>
+        </div>
+        <div style="flex:1">
+          <label>SO<br><input id="bulkOs" /></label>
+        </div>
+        <div style="flex:1">
+          <label>Última preventiva<br><input type="date" id="bulkLast" /></label>
+          <label>Próx. preventiva<br><input type="date" id="bulkNext" /></label>
+        </div>
+      </div>
+      <button onclick="bulkUpdate()">Aplicar</button>
+      <p id="bulkMessage"></p>
+    </div>
+
+    <div class="card" id="importSection">
+      <h3>Importar CSV (ADMIN)</h3>
+      <input type="file" id="csvFile" />
+      <button onclick="importCsv()">Importar</button>
+      <pre id="importResult"></pre>
+    </div>
+
+    <div class="card">
+      <h3>Relatório – preventivas pendentes</h3>
+      <label>Listar até a data:<br><input type="date" id="rUntil" /></label>
+      <button onclick="loadPending()">Carregar</button>
+      <pre id="pendingResult"></pre>
+    </div>
+  </div>
+
+  <script>
+    // API já apontando para o subdomínio da Render
+    const API_BASE = "https://sistema-prev-api.onrender.com/api";
+
+    let token = null;
+    let currentUser = null;
+    let computers = [];
+
+    function setAuth(authToken, user) {
+      token = authToken;
+      currentUser = user;
+      if (token) {
+        document.getElementById('loginSection').classList.add('hidden');
+        document.getElementById('appSection').classList.remove('hidden');
+        document.getElementById('userName').innerText = user.name;
+        document.getElementById('userRole').innerText = user.role;
+
+        const isAdmin = user.role === 'ADMIN';
+        document.getElementById('bulkSection').style.display = isAdmin ? 'block' : 'none';
+        document.getElementById('importSection').style.display = isAdmin ? 'block' : 'none';
+
+        loadComputers();
+      } else {
+        document.getElementById('loginSection').classList.remove('hidden');
+        document.getElementById('appSection').classList.add('hidden');
+      }
+    }
+
+    function logout() {
+      setAuth(null, null);
+    }
+
+    async function login() {
+      const email = document.getElementById('loginEmail').value;
+      const password = document.getElementById('loginPassword').value;
+      document.getElementById('loginMessage').innerText = "";
+      try {
+        const res = await fetch(API_BASE + "/auth/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password })
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          document.getElementById('loginMessage').innerText = data.message || "Erro no login";
+          return;
+        }
+        setAuth(data.token, data.user);
+      } catch (err) {
+        console.error(err);
+        document.getElementById('loginMessage').innerText = "Erro ao conectar ao servidor";
+      }
+    }
+
+    async function loadComputers() {
+      if (!token) return;
+
+      const search = document.getElementById('fSearch').value;
+      const location = document.getElementById('fLocation').value;
+      const os = document.getElementById('fOs').value;
+      const next_from = document.getElementById('fNextFrom').value;
+      const next_to = document.getElementById('fNextTo').value;
+
+      const params = new URLSearchParams();
+      if (search) params.append('search', search);
+      if (location) params.append('location', location);
+      if (os) params.append('os', os);
+      if (next_from) params.append('next_from', next_from);
+      if (next_to) params.append('next_to', next_to);
+
+      try {
+        const res = await fetch(API_BASE + "/computers?" + params.toString(), {
+          headers: { Authorization: "Bearer " + token }
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          alert(data.message || "Erro ao carregar computadores");
+          return;
+        }
+        computers = data.data;
+        renderComputers();
+      } catch (err) {
+        console.error(err);
+        alert("Erro ao conectar ao servidor");
+      }
+    }
+
+    function renderComputers() {
+      const tbody = document.getElementById('computersTableBody');
+      tbody.innerHTML = "";
+      computers.forEach((c) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><input type="checkbox" class="rowCheck" data-id="${c.id}" /></td>
+          <td>${c.id}</td>
+          <td>${c.name}</td>
+          <td>${c.location || ""}</td>
+          <td>${c.os}</td>
+          <td>${c.lastPreventiveDate ? c.lastPreventiveDate.substring(0,10) : ""}</td>
+          <td>${c.nextPreventiveDate ? c.nextPreventiveDate.substring(0,10) : ""}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function toggleSelectAll(checkbox) {
+      const checks = document.querySelectorAll('.rowCheck');
+      checks.forEach((c) => (c.checked = checkbox.checked));
+    }
+
+    async function bulkUpdate() {
+      if (!token || !currentUser || currentUser.role !== 'ADMIN') {
+        alert("Apenas ADMIN pode usar edição em massa.");
+        return;
+      }
+      const ids = Array.from(document.querySelectorAll('.rowCheck'))
+        .filter((c) => c.checked)
+        .map((c) => Number(c.getAttribute('data-id')));
+
+      if (ids.length === 0) {
+        alert("Selecione ao menos um computador.");
+        return;
+      }
+
+      const fields = {};
+      const manufacturer = document.getElementById('bulkManufacturer').value;
+      const location = document.getElementById('bulkLocation').value;
+      const os = document.getElementById('bulkOs').value;
+      const last = document.getElementById('bulkLast').value;
+      const next = document.getElementById('bulkNext').value;
+
+      if (manufacturer) fields.manufacturer = manufacturer;
+      if (location) fields.location = location;
+      if (os) fields.os = os;
+      if (last) fields.lastPreventiveDate = last;
+      if (next) fields.nextPreventiveDate = next;
+
+      if (Object.keys(fields).length === 0) {
+        alert("Informe ao menos um campo para alterar.");
+        return;
+      }
+
+      document.getElementById('bulkMessage').innerText = "";
+
+      try {
+        const res = await fetch(API_BASE + "/computers/bulk-update", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "Bearer " + token
+          },
+          body: JSON.stringify({ ids, fields })
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          document.getElementById('bulkMessage').innerText = data.message || "Erro no bulk update";
+          return;
+        }
+        document.getElementById('bulkMessage').innerText =
+          "Registros atualizados: " + data.updated_count;
+        loadComputers();
+      } catch (err) {
+        console.error(err);
+        document.getElementById('bulkMessage').innerText = "Erro ao conectar ao servidor";
+      }
+    }
+
+    async function importCsv() {
+      if (!token || !currentUser || currentUser.role !== 'ADMIN') {
+        alert("Apenas ADMIN pode importar CSV.");
+        return;
+      }
+      const fileInput = document.getElementById('csvFile');
+      if (!fileInput.files[0]) {
+        alert("Selecione um arquivo CSV.");
+        return;
+      }
+      const formData = new FormData();
+      formData.append("file", fileInput.files[0]);
+      document.getElementById('importResult').innerText = "Importando...";
+
+      try {
+        const res = await fetch(API_BASE + "/import/import-csv", {
+          method: "POST",
+          headers: { Authorization: "Bearer " + token },
+          body: formData
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          document.getElementById('importResult').innerText = data.message || "Erro na importação";
+          return;
+        }
+        document.getElementById('importResult').innerText = JSON.stringify(data, null, 2);
+        loadComputers();
+      } catch (err) {
+        console.error(err);
+        document.getElementById('importResult').innerText = "Erro ao conectar ao servidor";
+      }
+    }
+
+    async function loadPending() {
+      if (!token) return;
+      const until = document.getElementById('rUntil').value;
+      const params = new URLSearchParams();
+      if (until) params.append('until', until);
+
+      try {
+        const res = await fetch(API_BASE + "/reports/preventives-pending?" + params.toString(), {
+          headers: { Authorization: "Bearer " + token }
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          document.getElementById('pendingResult').innerText = data.message || "Erro";
+          return;
+        }
+        document.getElementById('pendingResult').innerText = JSON.stringify(data, null, 2);
+      } catch (err) {
+        console.error(err);
+        document.getElementById('pendingResult').innerText = "Erro ao conectar ao servidor";
+      }
+    }
+  </script>
+</body>
+</html>
