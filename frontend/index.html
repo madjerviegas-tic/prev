@@ -667,6 +667,11 @@
           <span class="icon">📊</span>
           <span>Relatórios</span>
         </button>
+        <button id="navUsersBtn" class="nav-btn" data-page="page-users" onclick="changePage(this, 'page-users')" style="display:none;">
+          <span class="icon">👤</span>
+          <span>Usuários</span>
+</button>
+
       </div>
 
       <div class="sidebar-footer">
@@ -977,6 +982,85 @@
                 <option value="by-manufacturer">Distribuição por fabricante</option>
                 <option value="no-next-date">Máquinas sem próxima preventiva</option>
               </select>
+            <!-- USUÁRIOS (ADMIN) -->
+                <section id="page-users" class="page-section">
+                  <div class="page-header">
+                    <div>
+                      <div class="page-title">Gestão de usuários</div>
+                      <div class="page-subtitle">Cadastrar novos usuários, definir perfis e remover acessos</div>
+                    </div>
+                    <div class="chip chip-pill">Somente ADMIN</div>
+                  </div>
+                
+                  <div class="card">
+                    <div class="card-header">
+                      <div>
+                        <div class="card-title">Usuários do sistema</div>
+                        <div class="card-subtitle">
+                          Lista de usuários cadastrados. Selecione para remoção em massa.
+                        </div>
+                      </div>
+                      <div style="display:flex; gap:8px; align-items:center;">
+                        <span class="chip"><span id="countUsersSelected">0</span> selecionados</span>
+                        <button class="btn-sm btn-sm-danger" onclick="deleteSelectedUsers()">Remover selecionados</button>
+                      </div>
+                    </div>
+                
+                    <div class="report-table-wrapper">
+                      <table>
+                        <thead>
+                          <tr>
+                            <th style="width:32px;"><input type="checkbox" id="selectAllUsers" onclick="toggleSelectAllUsers(this)" /></th>
+                            <th style="width:50px;">ID</th>
+                            <th>Nome</th>
+                            <th>Email</th>
+                            <th style="width:80px;">Perfil</th>
+                            <th style="width:120px;">Criado em</th>
+                          </tr>
+                        </thead>
+                        <tbody id="usersTableBody"></tbody>
+                      </table>
+                    </div>
+                  </div>
+                
+                  <div class="card">
+                    <div class="card-header">
+                      <div>
+                        <div class="card-title">Novo usuário</div>
+                        <div class="card-subtitle">
+                          Crie um usuário com perfil de acesso. Apenas ADMIN pode criar.
+                        </div>
+                      </div>
+                    </div>
+                
+                    <div class="flex">
+                      <div class="col">
+                        <label>Nome *</label>
+                        <input id="uName" class="input" placeholder="Ex.: João da Silva" />
+                      </div>
+                      <div class="col">
+                        <label>Email *</label>
+                        <input id="uEmail" class="input" placeholder="Ex.: joao@empresa.com" />
+                      </div>
+                      <div class="col">
+                        <label>Senha *</label>
+                        <input id="uPassword" type="password" class="input" placeholder="Senha inicial" />
+                      </div>
+                      <div class="col" style="max-width:160px;">
+                        <label>Perfil</label>
+                        <select id="uRole" class="input">
+                          <option value="USER">USER</option>
+                          <option value="ADMIN">ADMIN</option>
+                        </select>
+                      </div>
+                    </div>
+                
+                    <button class="btn-sm btn-sm-primary" style="margin-top:10px;" onclick="createUser()">
+                      Criar usuário
+                    </button>
+                    <div id="userMessage" style="font-size:12px; margin-top:6px; color:var(--text-soft);"></div>
+                  </div>
+                </section>
             </div>
 
             <div class="col" style="max-width:220px;">
@@ -1037,11 +1121,12 @@
     // ====== CONFIG API ======
     const API_BASE = "https://prev-l0mb.onrender.com/api";
 
-    let token = null;
-    let currentUser = null;
-    let computers = [];
-    let lastReportJson = null;
-    let lastReportType = null;
+      let token = null;
+      let currentUser = null;
+      let computers = [];
+      let users = [];           // 👈 NOVO
+      let lastReportJson = null;
+      let lastReportType = null;
 
     // ====== UTIL ======
     function showToast(message, type = "success") {
@@ -1055,16 +1140,19 @@
     function changePage(btn, pageId) {
       document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
-
+    
       document.querySelectorAll('.page-section').forEach(sec => sec.classList.remove('active'));
       document.getElementById(pageId).classList.add('active');
-
+    
       if (pageId === 'page-dashboard') {
         loadDashboardStats();
       } else if (pageId === 'page-computers') {
         loadComputers();
+      } else if (pageId === 'page-users') {
+        loadUsers();
       }
     }
+
 
     function updateSelectedCount() {
       const count = Array.from(document.querySelectorAll('.rowCheck'))
@@ -1108,6 +1196,18 @@
         document.getElementById('deleteSelectedWrapper').style.display = isAdmin ? 'inline-flex' : 'none';
 
         loadDashboardStats();
+
+        const navUsersBtn = document.getElementById('navUsersBtn');
+        if (navUsersBtn) {
+          navUsersBtn.style.display = isAdmin ? 'flex' : 'none';
+        }
+        
+        if (isAdmin) {
+          // Carrega usuários assim que o ADMIN logar
+          loadUsers();
+        }
+
+        
       } else {
         document.getElementById('loginSection').style.display = 'flex';
         document.getElementById('appSection').style.display = 'none';
@@ -1256,6 +1356,154 @@
           '<div style="font-size:12px; color:var(--text-soft);">Erro ao carregar distribuição.</div>';
       }
     }
+
+      // ====== USUÁRIOS (ADMIN) ======
+
+          async function loadUsers() {
+            if (!token || !currentUser || currentUser.role !== 'ADMIN') return;
+          
+            try {
+              const res = await fetch(API_BASE + "/users", {
+                headers: { Authorization: "Bearer " + token }
+              });
+              const data = await res.json();
+              if (!res.ok) {
+                showToast(data.message || "Erro ao carregar usuários", "error");
+                return;
+              }
+              users = data;
+              renderUsers();
+            } catch (err) {
+              console.error(err);
+              showToast("Erro ao conectar ao servidor ao carregar usuários.", "error");
+            }
+          }
+          
+          function renderUsers() {
+            const tbody = document.getElementById('usersTableBody');
+            if (!tbody) return;
+          
+            tbody.innerHTML = "";
+            users.forEach(u => {
+              const created = u.createdAt ? new Date(u.createdAt).toLocaleString() : "";
+              const tr = document.createElement('tr');
+              tr.innerHTML = `
+                <td><input type="checkbox" class="userRowCheck" data-id="${u.id}" /></td>
+                <td>${u.id}</td>
+                <td>${u.name}</td>
+                <td>${u.email}</td>
+                <td>${u.role}</td>
+                <td>${created}</td>
+              `;
+              tbody.appendChild(tr);
+            });
+          
+            document.querySelectorAll('.userRowCheck').forEach(chk => {
+              chk.addEventListener('change', updateUsersSelectedCount);
+            });
+            updateUsersSelectedCount();
+          }
+          
+          function updateUsersSelectedCount() {
+            const count = Array.from(document.querySelectorAll('.userRowCheck'))
+              .filter(c => c.checked).length;
+            const el = document.getElementById('countUsersSelected');
+            if (el) el.innerText = count;
+          }
+          
+          function toggleSelectAllUsers(checkbox) {
+            const checks = document.querySelectorAll('.userRowCheck');
+            checks.forEach((c) => (c.checked = checkbox.checked));
+            updateUsersSelectedCount();
+          }
+          
+          async function createUser() {
+            if (!token || !currentUser || currentUser.role !== 'ADMIN') {
+              showToast("Apenas ADMIN pode criar usuários.", "error");
+              return;
+            }
+          
+            const name = document.getElementById('uName').value.trim();
+            const email = document.getElementById('uEmail').value.trim();
+            const password = document.getElementById('uPassword').value.trim();
+            const role = document.getElementById('uRole').value;
+            const msgEl = document.getElementById('userMessage');
+          
+            if (!name || !email || !password) {
+              showToast("Preencha nome, email e senha.", "error");
+              if (msgEl) msgEl.innerText = "Preencha nome, email e senha.";
+              return;
+            }
+          
+            try {
+              const res = await fetch(API_BASE + "/users", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: "Bearer " + token
+                },
+                body: JSON.stringify({ name, email, password, role })
+              });
+              const data = await res.json();
+              if (!res.ok) {
+                showToast(data.message || "Erro ao criar usuário.", "error");
+                if (msgEl) msgEl.innerText = data.message || "Erro ao criar usuário.";
+                return;
+              }
+          
+              // limpar campos
+              document.getElementById('uName').value = "";
+              document.getElementById('uEmail').value = "";
+              document.getElementById('uPassword').value = "";
+              document.getElementById('uRole').value = "USER";
+              if (msgEl) msgEl.innerText = "Usuário criado com sucesso.";
+          
+              showToast("Usuário criado com sucesso!", "success");
+              loadUsers();
+            } catch (err) {
+              console.error(err);
+              if (msgEl) msgEl.innerText = "Erro ao conectar ao servidor ao criar usuário.";
+              showToast("Erro ao conectar ao servidor ao criar usuário.", "error");
+            }
+          }
+          
+          async function deleteSelectedUsers() {
+            if (!token || !currentUser || currentUser.role !== 'ADMIN') {
+              showToast("Apenas ADMIN pode remover usuários.", "error");
+              return;
+            }
+          
+            const ids = Array.from(document.querySelectorAll('.userRowCheck'))
+              .filter((c) => c.checked)
+              .map((c) => Number(c.getAttribute('data-id')));
+          
+            if (ids.length === 0) {
+              showToast("Selecione ao menos um usuário.", "error");
+              return;
+            }
+          
+            const confirmar = window.confirm(
+              `Tem certeza que deseja remover ${ids.length} usuário(s)?`
+            );
+            if (!confirmar) return;
+          
+            try {
+              for (const id of ids) {
+                await fetch(API_BASE + "/users/" + id, {
+                  method: "DELETE",
+                  headers: { Authorization: "Bearer " + token }
+                });
+              }
+              showToast("Usuário(s) removido(s) com sucesso.", "success");
+              loadUsers();
+            } catch (err) {
+              console.error(err);
+              showToast("Erro ao remover usuários.", "error");
+            }
+          }
+
+
+    
 
     // ====== COMPUTADORES ======
     function clearFilters() {
