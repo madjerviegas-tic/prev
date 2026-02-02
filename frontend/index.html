@@ -490,6 +490,99 @@
 
     .toast.show { display: block; }
 
+    /* ====== ESTILOS ESPECÍFICOS DE RELATÓRIOS / GRÁFICOS ====== */
+
+    .report-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .report-card {
+      flex: 1;
+      min-width: 180px;
+      background: radial-gradient(circle at top left, #0b1120 0, #020617 60%);
+      border-radius: var(--radius);
+      padding: 10px 10px;
+      border: 1px solid #1f2937;
+    }
+
+    .report-card-label {
+      font-size: 11px;
+      color: var(--text-soft);
+    }
+
+    .report-card-value {
+      margin-top: 4px;
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .report-card-note {
+      font-size: 10px;
+      margin-top: 3px;
+      color: var(--text-soft);
+    }
+
+    .bar-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+
+    .bar-label {
+      font-size: 12px;
+      flex: 0 0 40%;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .bar-track {
+      flex: 1;
+      height: 8px;
+      border-radius: 999px;
+      background: #020617;
+      border: 1px solid #111827;
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      height: 100%;
+      border-radius: 999px;
+      background: linear-gradient(to right, var(--accent), var(--accent-strong));
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+
+    .bar-value {
+      font-size: 11px;
+      color: var(--text-soft);
+      min-width: 26px;
+      text-align: right;
+    }
+
+    .report-table-wrapper {
+      max-height: 260px;
+      overflow:auto;
+      border-radius: 8px;
+      border: 1px solid #111827;
+      margin-top: 8px;
+    }
+
+    .json-toggle {
+      font-size: 11px;
+      color: var(--accent-strong);
+      cursor: pointer;
+      text-decoration: underline;
+    }
+
+    .json-toggle:hover {
+      color: var(--accent);
+    }
+
     @media (max-width: 800px) {
       .layout { flex-direction: column; }
       .sidebar {
@@ -667,7 +760,6 @@
               <div class="card-title">Filtros</div>
               <div class="card-subtitle">Use os campos abaixo para refinar a busca</div>
             </div>
-            <button class="btn-sm btn-sm-primary" onclick="clearFilters()">Limpar filtros</button>
           </div>
 
           <div class="flex">
@@ -701,12 +793,12 @@
 
             <div style="display:flex; gap:8px;">
               <button class="btn-sm" onclick="clearFilters()">Limpar</button>
-                <button class="btn-sm btn-sm-primary" onclick="loadComputers()">Buscar</button>
+              <button class="btn-sm btn-sm-primary" onclick="loadComputers()">Buscar</button>
             </div>
           </div>
+        </div>
 
-
-        <!-- NOVO: CADASTRO MANUAL -->
+        <!-- CADASTRO MANUAL -->
         <div class="card" id="createSection">
           <div class="card-header">
             <div>
@@ -856,57 +948,71 @@
 
       <!-- RELATÓRIOS -->
       <section id="page-reports" class="page-section">
-  <div class="page-header">
-    <div>
-      <div class="page-title">Relatórios de preventivas</div>
-      <div class="page-subtitle">Escolha o tipo de relatório e gere os dados</div>
-    </div>
-    <div class="chip chip-pill">Visão de gestão</div>
-  </div>
-
-  <div class="card">
-    <div class="card-header">
-      <div>
-        <div class="card-title">Configuração do relatório</div>
-        <div class="card-subtitle">
-          Selecione o tipo de relatório que deseja visualizar. Alguns permitem informar uma data de referência.
+        <div class="page-header">
+          <div>
+            <div class="page-title">Relatórios de preventivas</div>
+            <div class="page-subtitle">Escolha o tipo de relatório, veja gráficos e detalhes</div>
+          </div>
+          <div class="chip chip-pill">Visão de gestão</div>
         </div>
-      </div>
-    </div>
 
-    <div class="flex">
-      <div class="col" style="max-width:260px;">
-        <label>Tipo de relatório</label>
-        <select id="reportType" class="input">
-          <option value="summary">Resumo geral de preventivas</option>
-          <option value="pending">Preventivas pendentes até a data</option>
-          <option value="by-location">Distribuição por localização</option>
-          <option value="by-os">Distribuição por sistema operacional</option>
-          <option value="by-manufacturer">Distribuição por fabricante</option>
-          <option value="no-next-date">Máquinas sem próxima preventiva</option>
-        </select>
-      </div>
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Configuração do relatório</div>
+              <div class="card-subtitle">
+                Selecione o tipo de relatório que deseja visualizar. Alguns permitem informar uma data de referência.
+              </div>
+            </div>
+          </div>
 
-      <div class="col" style="max-width:220px;">
-        <label>Data de referência (opcional)</label>
-        <input type="date" id="rUntil" class="input" />
-        <div style="font-size:11px; color:var(--text-soft); margin-top:4px;">
-          Usada em: "Resumo geral" e "Pendentes até a data".
+          <div class="flex">
+            <div class="col" style="max-width:260px;">
+              <label>Tipo de relatório</label>
+              <select id="reportType" class="input">
+                <option value="summary">Resumo geral de preventivas</option>
+                <option value="pending">Preventivas pendentes até a data</option>
+                <option value="by-location">Distribuição por localização</option>
+                <option value="by-os">Distribuição por sistema operacional</option>
+                <option value="by-manufacturer">Distribuição por fabricante</option>
+                <option value="no-next-date">Máquinas sem próxima preventiva</option>
+              </select>
+            </div>
+
+            <div class="col" style="max-width:220px;">
+              <label>Data de referência (opcional)</label>
+              <input type="date" id="rUntil" class="input" />
+              <div style="font-size:11px; color:var(--text-soft); margin-top:4px;">
+                Usada em: "Resumo geral" e "Pendentes até a data".
+              </div>
+            </div>
+          </div>
+
+          <button class="btn-sm btn-sm-primary" style="margin-top:10px;" onclick="runReport()">
+            Gerar relatório
+          </button>
+
+          <div style="margin-top:10px; display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-size:11px; color:var(--text-soft);">
+              Resultado visual do relatório:
+            </span>
+            <span class="json-toggle" onclick="toggleJson()">
+              Mostrar / ocultar JSON bruto
+            </span>
+          </div>
+
+          <div id="reportVisual" style="margin-top:8px;">
+            <div style="font-size:12px; color:var(--text-soft);">
+              Escolha um tipo de relatório e clique em "Gerar relatório".
+            </div>
+          </div>
+
+          <div style="margin-top:10px; display:none;" id="jsonContainer">
+            <label style="font-size:11px;">JSON bruto da API</label>
+            <pre id="reportJson">{}</pre>
+          </div>
         </div>
-      </div>
-    </div>
-
-    <button class="btn-sm btn-sm-primary" style="margin-top:10px;" onclick="runReport()">
-      Gerar relatório
-    </button>
-
-    <div style="margin-top:10px;">
-      <label style="font-size:11px;">Resultado do relatório (JSON)</label>
-      <pre id="pendingResult">{}</pre>
-    </div>
-  </div>
-</section>
-
+      </section>
     </main>
   </div>
 
@@ -919,6 +1025,8 @@
     let token = null;
     let currentUser = null;
     let computers = [];
+    let lastReportJson = null;
+    let lastReportType = null;
 
     // ====== UTIL ======
     function showToast(message, type = "success") {
@@ -984,7 +1092,6 @@
         document.getElementById('createSection').style.display = isAdmin ? 'block' : 'none';
         document.getElementById('deleteSelectedWrapper').style.display = isAdmin ? 'inline-flex' : 'none';
 
-        // Carrega dashboard ao logar
         loadDashboardStats();
       } else {
         document.getElementById('loginSection').style.display = 'flex';
@@ -1033,7 +1140,7 @@
 
       const today = todayIsoDate();
 
-      // 1) Total de computadores (usando pageSize=1 só pra pegar o "total")
+      // Total de computadores
       try {
         const resComputers = await fetch(API_BASE + "/computers?page=1&pageSize=1", {
           headers: { Authorization: "Bearer " + token }
@@ -1049,7 +1156,7 @@
         document.getElementById('dashTotalComputers').innerText = '–';
       }
 
-      // 2) Preventivas pendentes (até hoje)
+      // Preventivas pendentes
       try {
         const params = new URLSearchParams();
         params.append('until', today);
@@ -1070,7 +1177,7 @@
         document.getElementById('dashDueSoon').innerText = '–';
       }
 
-      // 3) Distribuição por localização
+      // Distribuição por localização
       try {
         const resLoc = await fetch(API_BASE + "/reports/by-location", {
           headers: { Authorization: "Bearer " + token }
@@ -1102,7 +1209,7 @@
           '<div style="font-size:12px; color:var(--text-soft);">Erro ao carregar distribuição.</div>';
       }
 
-      // 4) Distribuição por sistema operacional
+      // Distribuição por sistema operacional
       try {
         const resOs = await fetch(API_BASE + "/reports/by-os", {
           headers: { Authorization: "Bearer " + token }
@@ -1142,32 +1249,33 @@
       document.getElementById('fOs').value = "";
       document.getElementById('fNextFrom').value = "";
       document.getElementById('fNextTo').value = "";
+      const all = document.getElementById('fAll');
+      if (all) all.checked = false;
       loadComputers();
     }
 
     async function loadComputers() {
       if (!token) return;
-    
+
       const search = document.getElementById('fSearch').value;
       const location = document.getElementById('fLocation').value;
       const os = document.getElementById('fOs').value;
       const next_from = document.getElementById('fNextFrom').value;
       const next_to = document.getElementById('fNextTo').value;
       const all = document.getElementById('fAll') ? document.getElementById('fAll').checked : false;
-    
+
       const params = new URLSearchParams();
       if (search) params.append('search', search);
       if (location) params.append('location', location);
       if (os) params.append('os', os);
       if (next_from) params.append('next_from', next_from);
       if (next_to) params.append('next_to', next_to);
-    
-      // 🔹 se marcar "Carregar todas as máquinas", pede uma página só com um pageSize bem alto
+
       if (all) {
         params.append('page', '1');
-        params.append('pageSize', '10000'); // ajuste esse número se precisar
+        params.append('pageSize', '10000');
       }
-    
+
       try {
         const res = await fetch(API_BASE + "/computers?" + params.toString(), {
           headers: { Authorization: "Bearer " + token }
@@ -1180,7 +1288,7 @@
         }
         computers = data.data;
         renderComputers();
-    
+
         document.getElementById('statTotalComputers').innerText = data.total ?? computers.length;
         document.getElementById('statNextFilter').innerText = (next_from || next_to) ? "Filtrado" : "Sem filtro";
       } catch (err) {
@@ -1189,7 +1297,6 @@
         showToast("Erro ao conectar ao servidor", "error");
       }
     }
-
 
     function renderComputers() {
       const tbody = document.getElementById('computersTableBody');
@@ -1220,7 +1327,7 @@
       updateSelectedCount();
     }
 
-    // NOVO: criar computador manualmente
+    // CADASTRO MANUAL
     async function createComputer() {
       if (!token || !currentUser || currentUser.role !== 'ADMIN') {
         showToast("Apenas ADMIN pode cadastrar computadores.", "error");
@@ -1263,7 +1370,6 @@
           return;
         }
 
-        // limpa campos
         document.getElementById('newName').value = "";
         document.getElementById('newManufacturer').value = "";
         document.getElementById('newLocation').value = "";
@@ -1281,7 +1387,7 @@
       }
     }
 
-    // NOVO: excluir selecionados
+    // EXCLUSÃO
     async function deleteSelected() {
       if (!token || !currentUser || currentUser.role !== 'ADMIN') {
         showToast("Apenas ADMIN pode excluir computadores.", "error");
@@ -1303,7 +1409,6 @@
       if (!confirma) return;
 
       try {
-        // exclui em sequência simples (poderia ser Promise.all)
         for (const id of ids) {
           await fetch(API_BASE + "/computers/" + id, {
             method: "DELETE",
@@ -1319,7 +1424,7 @@
       }
     }
 
-    // ====== BULK UPDATE ======
+    // BULK UPDATE
     async function bulkUpdate() {
       if (!token || !currentUser || currentUser.role !== 'ADMIN') {
         alert("Apenas ADMIN pode usar edição em massa.");
@@ -1384,7 +1489,7 @@
       }
     }
 
-    // ====== IMPORTAÇÃO CSV ======
+    // IMPORTAÇÃO CSV
     async function importCsv() {
       if (!token || !currentUser || currentUser.role !== 'ADMIN') {
         alert("Apenas ADMIN pode importar CSV.");
@@ -1425,66 +1530,243 @@
       }
     }
 
-    // ====== RELATÓRIOS ======
-    // ====== RELATÓRIOS ======
-async function runReport() {
-  if (!token) return;
+    // ====== RELATÓRIOS COM GRÁFICOS ======
 
-  const type = document.getElementById('reportType').value;
-  const until = document.getElementById('rUntil').value;
-  const resultEl = document.getElementById('pendingResult');
-  resultEl.innerText = "Carregando...";
-
-  let url = "";
-  let params = new URLSearchParams();
-
-  // Define URL e parâmetros conforme tipo
-  switch (type) {
-    case "summary":
-      url = "/reports/summary";
-      if (until) params.append("until", until);
-      break;
-    case "pending":
-      url = "/reports/preventives-pending";
-      if (until) params.append("until", until);
-      break;
-    case "by-location":
-      url = "/reports/by-location";
-      break;
-    case "by-os":
-      url = "/reports/by-os";
-      break;
-    case "by-manufacturer":
-      url = "/reports/by-manufacturer";
-      break;
-    case "no-next-date":
-      url = "/reports/no-next-date";
-      break;
-    default:
-      resultEl.innerText = "Tipo de relatório inválido.";
-      return;
-  }
-
-  try {
-    const res = await fetch(API_BASE + url + (params.toString() ? "?" + params.toString() : ""), {
-      headers: { Authorization: "Bearer " + token }
-    });
-    const data = await res.json();
-
-    if (!res.ok) {
-      resultEl.innerText = data.message || "Erro ao gerar relatório";
-      showToast(data.message || "Erro ao gerar relatório", "error");
-      return;
+    function toggleJson() {
+      const container = document.getElementById('jsonContainer');
+      container.style.display = container.style.display === 'none' || container.style.display === '' ? 'block' : 'none';
+      if (lastReportJson) {
+        document.getElementById('reportJson').innerText = JSON.stringify(lastReportJson, null, 2);
+      }
     }
 
-    resultEl.innerText = JSON.stringify(data, null, 2);
-    showToast("Relatório gerado com sucesso!", "success");
-  } catch (err) {
-    console.error(err);
-    resultEl.innerText = "Erro ao conectar ao servidor";
-    showToast("Erro ao conectar ao servidor", "error");
-  }
-}
+    async function runReport() {
+      if (!token) return;
+
+      const type = document.getElementById('reportType').value;
+      const until = document.getElementById('rUntil').value;
+      const visual = document.getElementById('reportVisual');
+      const jsonContainer = document.getElementById('jsonContainer');
+      jsonContainer.style.display = 'none';
+      document.getElementById('reportJson').innerText = "{}";
+
+      visual.innerHTML = '<div style="font-size:12px; color:var(--text-soft);">Carregando relatório...</div>';
+
+      let url = "";
+      let params = new URLSearchParams();
+
+      switch (type) {
+        case "summary":
+          url = "/reports/summary";
+          if (until) params.append("until", until);
+          break;
+        case "pending":
+          url = "/reports/preventives-pending";
+          if (until) params.append("until", until);
+          break;
+        case "by-location":
+          url = "/reports/by-location";
+          break;
+        case "by-os":
+          url = "/reports/by-os";
+          break;
+        case "by-manufacturer":
+          url = "/reports/by-manufacturer";
+          break;
+        case "no-next-date":
+          url = "/reports/no-next-date";
+          break;
+        default:
+          visual.innerHTML = "Tipo de relatório inválido.";
+          return;
+      }
+
+      try {
+        const res = await fetch(API_BASE + url + (params.toString() ? "?" + params.toString() : ""), {
+          headers: { Authorization: "Bearer " + token }
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+          visual.innerHTML = data.message || "Erro ao gerar relatório";
+          showToast(data.message || "Erro ao gerar relatório", "error");
+          return;
+        }
+
+        lastReportJson = data;
+        lastReportType = type;
+        renderReportVisual(type, data);
+        showToast("Relatório gerado com sucesso!", "success");
+      } catch (err) {
+        console.error(err);
+        visual.innerHTML = "Erro ao conectar ao servidor";
+        showToast("Erro ao conectar ao servidor", "error");
+      }
+    }
+
+    function renderReportVisual(type, data) {
+      const visual = document.getElementById('reportVisual');
+
+      if (type === "summary") {
+        const total = data.totalComputers ?? 0;
+        const overdue = data.overdue ?? 0;
+        const dueSoon = data.dueSoon7Days ?? 0;
+        const noNext = data.noNextDate ?? 0;
+
+        visual.innerHTML = `
+          <div class="report-grid">
+            <div class="report-card">
+              <div class="report-card-label">Total de computadores</div>
+              <div class="report-card-value">${total}</div>
+              <div class="report-card-note">Todos os equipamentos cadastrados</div>
+            </div>
+            <div class="report-card">
+              <div class="report-card-label">Vencidas até ${data.until || '-'}</div>
+              <div class="report-card-value" style="color:var(--danger);">${overdue}</div>
+              <div class="report-card-note">Preventivas com data já vencida</div>
+            </div>
+            <div class="report-card">
+              <div class="report-card-label">A vencer em 7 dias</div>
+              <div class="report-card-value" style="color:var(--accent-strong);">${dueSoon}</div>
+              <div class="report-card-note">Janela de 7 dias a partir da data de referência</div>
+            </div>
+            <div class="report-card">
+              <div class="report-card-label">Sem próxima preventiva definida</div>
+              <div class="report-card-value">${noNext}</div>
+              <div class="report-card-note">Máquinas sem data planejada</div>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      if (type === "pending") {
+        const overdue = data.overdue ?? 0;
+        const dueSoon = data.due_soon ?? 0;
+        const totalPending = data.total_pending ?? 0;
+        visual.innerHTML = `
+          <div class="report-grid">
+            <div class="report-card">
+              <div class="report-card-label">Data de corte</div>
+              <div class="report-card-value">${data.until || '-'}</div>
+              <div class="report-card-note">Considerando preventivas até esta data</div>
+            </div>
+            <div class="report-card">
+              <div class="report-card-label">Preventivas vencidas</div>
+              <div class="report-card-value" style="color:var(--danger);">${overdue}</div>
+              <div class="report-card-note">Já deveriam ter sido realizadas</div>
+            </div>
+            <div class="report-card">
+              <div class="report-card-label">A vencer até a data</div>
+              <div class="report-card-value" style="color:var(--accent-strong);">${dueSoon}</div>
+              <div class="report-card-note">Ainda dentro do prazo</div>
+            </div>
+            <div class="report-card">
+              <div class="report-card-label">Total pendente</div>
+              <div class="report-card-value">${totalPending}</div>
+              <div class="report-card-note">Soma de vencidas + a vencer</div>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      if (type === "by-location" || type === "by-os" || type === "by-manufacturer") {
+        const arr = Array.isArray(data) ? data : [];
+        if (arr.length === 0) {
+          visual.innerHTML = '<div style="font-size:12px; color:var(--text-soft);">Nenhum dado encontrado.</div>';
+          return;
+        }
+        const values = arr.map(a => a.total ?? a._count?._all ?? 0);
+        const max = Math.max(...values, 1);
+
+        let titleLabel = "";
+        let fieldKey = "";
+        if (type === "by-location") {
+          titleLabel = "Localização";
+          fieldKey = "location";
+        } else if (type === "by-os") {
+          titleLabel = "Sistema operacional";
+          fieldKey = "os";
+        } else {
+          titleLabel = "Fabricante";
+          fieldKey = "manufacturer";
+        }
+
+        const bars = arr.map(row => {
+          const label = row[fieldKey] || "Não informado";
+          const val = row.total ?? row._count?._all ?? 0;
+          const perc = Math.round((val / max) * 100);
+          return `
+            <div class="bar-row">
+              <div class="bar-label" title="${label}">${label}</div>
+              <div class="bar-track">
+                <div class="bar-fill" style="width:${perc}%;"></div>
+              </div>
+              <div class="bar-value">${val}</div>
+            </div>
+          `;
+        }).join('');
+
+        visual.innerHTML = `
+          <div style="font-size:12px; color:var(--text-soft); margin-bottom:4px;">
+            Top ${arr.length} agrupado por <strong>${titleLabel}</strong>.
+          </div>
+          <div>
+            ${bars}
+          </div>
+        `;
+        return;
+      }
+
+      if (type === "no-next-date") {
+        const total = data.total ?? (data.data ? data.data.length : 0);
+        const list = Array.isArray(data.data) ? data.data : [];
+        const first = list.slice(0, 30);
+
+        const rows = first.map(c => `
+          <tr>
+            <td>${c.id}</td>
+            <td>${c.name}</td>
+            <td>${c.location || ""}</td>
+            <td>${c.os || ""}</td>
+            <td>${c.manufacturer || ""}</td>
+            <td>${c.serialNumber || ""}</td>
+          </tr>
+        `).join('');
+
+        visual.innerHTML = `
+          <div class="report-card">
+            <div class="report-card-label">Máquinas sem próxima preventiva</div>
+            <div class="report-card-value">${total}</div>
+            <div class="report-card-note">
+              Listando abaixo até 30 registros para visualização rápida.
+            </div>
+          </div>
+          <div class="report-table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width:50px;">ID</th>
+                  <th>Nome</th>
+                  <th>Localização</th>
+                  <th>SO</th>
+                  <th>Fabricante</th>
+                  <th>Nº Série</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${rows}
+              </tbody>
+            </table>
+          </div>
+        `;
+        return;
+      }
+
+      // fallback
+      visual.innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+    }
   </script>
 </body>
 </html>
