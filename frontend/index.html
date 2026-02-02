@@ -988,18 +988,33 @@
             </div>
           </div>
 
-          <button class="btn-sm btn-sm-primary" style="margin-top:10px;" onclick="runReport()">
-            Gerar relatório
-          </button>
+          <div style="margin-top:10px; display:flex; gap:8px; justify-content:space-between; align-items:center;">
+  <div style="display:flex; gap:8px;">
+    <button class="btn-sm btn-sm-primary" onclick="runReport()">
+      Gerar relatório
+    </button>
+    <button class="btn-sm" onclick="exportReportPdf()">
+      Exportar PDF
+    </button>
+  </div>
 
-          <div style="margin-top:10px; display:flex; justify-content:space-between; align-items:center;">
-            <span style="font-size:11px; color:var(--text-soft);">
-              Resultado visual do relatório:
-            </span>
-            <span class="json-toggle" onclick="toggleJson()">
-              Mostrar / ocultar JSON bruto
-            </span>
-          </div>
+  <span class="json-toggle" onclick="toggleJson()">
+    Mostrar / ocultar JSON bruto
+  </span>
+</div>
+
+<div style="margin-top:10px;">
+  <span style="font-size:11px; color:var(--text-soft);">
+    Resultado visual do relatório:
+  </span>
+</div>
+
+<div id="reportVisual" style="margin-top:8px;">
+  <div style="font-size:12px; color:var(--text-soft);">
+    Escolha um tipo de relatório e clique em "Gerar relatório".
+  </div>
+</div>
+
 
           <div id="reportVisual" style="margin-top:8px;">
             <div style="font-size:12px; color:var(--text-soft);">
