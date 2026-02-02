@@ -1,126 +1,219 @@
+// backend/src/routes/reportRoutes.js
 const express = require('express');
-const { PrismaClient } = require('@prisma/client');
-const { authMiddleware } = require('../authMiddleware');
-
-const prisma = new PrismaClient();
 const router = express.Router();
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient();
+const { authMiddleware } = require('../middlewares/authMiddleware');
 
-// Preventivas realizadas
-router.get('/preventives-done', authMiddleware, async (req, res) => {
+// Helper para somar dias
+function addDays(date, days) {
+  const d = new Date(date);
+  d.setDate(d.getDate() + days);
+  return d;
+}
+
+// ------------------------------
+// 1) Preventivas pendentes
+// ------------------------------
+// GET /api/reports/preventives-pending?until=YYYY-MM-DD
+router.get('/preventives-pending', authMiddleware, async (req, res) => {
   try {
-    const { from, to, location, os } = req.query;
+    const { until } = req.query;
+    const refDate = until ? new Date(until) : new Date();
 
-    const where = {};
-
-    if (from || to) {
-      where.performedAt = {};
-      if (from) where.performedAt.gte = new Date(from);
-      if (to) where.performedAt.lte = new Date(to);
+    if (isNaN(refDate.getTime())) {
+      return res.status(400).json({ message: 'Data inválida em "until"' });
     }
 
-    if (location || os) {
-      where.computer = { AND: [] };
-      if (location) where.computer.AND.push({ location: { contains: location, mode: 'insensitive' } });
-      if (os) where.computer.AND.push({ os: { contains: os, mode: 'insensitive' } });
-    }
+    // vencidas: próxima preventiva < hoje
+    const overdue = await prisma.computer.count({
+      where: {
+        nextPreventiveDate: {
+          lt: refDate
+        }
+      }
+    });
 
-    const logs = await prisma.preventiveLog.findMany({
-      where,
-      include: { computer: true }
+    // a vencer até a data (inclui hoje)
+    const pending = await prisma.computer.count({
+      where: {
+        nextPreventiveDate: {
+          lte: refDate
+        }
+      }
     });
 
     res.json({
-      total: logs.length,
-      items: logs.map((l) => ({
-        id: l.id,
-        computer_id: l.computerId,
-        computer_name: l.computer.name,
-        performed_at: l.performedAt,
-        location: l.computer.location,
-        os: l.computer.os
-      }))
+      until: refDate.toISOString().slice(0, 10),
+      overdue,
+      due_soon: pending - overdue < 0 ? 0 : pending - overdue,
+      total_pending: pending
     });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Erro em preventives-done' });
+    console.error('Erro em /reports/preventives-pending', err);
+    res.status(500).json({ message: 'Erro ao gerar relatório de pendências' });
   }
 });
 
-// Preventivas pendentes
-router.get('/preventives-pending', authMiddleware, async (req, res) => {
-  try {
-    const { until, location, os } = req.query;
-
-    const today = new Date();
-    const limitDate = until ? new Date(until) : today;
-
-    const where = {
-      nextPreventiveDate: { lte: limitDate }
-    };
-
-    if (location) {
-      where.location = { contains: location, mode: 'insensitive' };
-    }
-    if (os) {
-      where.os = { contains: os, mode: 'insensitive' };
-    }
-
-    const computers = await prisma.computer.findMany({ where });
-
-    const items = computers.map((c) => ({
-      id: c.id,
-      name: c.name,
-      nextPreventiveDate: c.nextPreventiveDate,
-      status: c.nextPreventiveDate && c.nextPreventiveDate < today ? 'OVERDUE' : 'DUE_SOON'
-    }));
-
-    const overdue = items.filter((i) => i.status === 'OVERDUE').length;
-    const due_soon = items.filter((i) => i.status === 'DUE_SOON').length;
-
-    res.json({ overdue, due_soon, items });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Erro em preventives-pending' });
-  }
-});
-
-// Resumo por localização
-router.get('/by-location', authMiddleware, async (req, res) => {
+// ------------------------------
+// 2) Distribuição por localização
+// ------------------------------
+// GET /api/reports/by-location
+router.get('/by-location', authMiddleware, async (_req, res) => {
   try {
     const result = await prisma.computer.groupBy({
       by: ['location'],
-      _count: { _all: true }
+      _count: { _all: true },
+      orderBy: {
+        _count: { _all: 'desc' }
+      }
     });
 
-    res.json(
-      result.map((r) => ({
-        location: r.location,
-        total: r._count._all
-      }))
-    );
+    const mapped = result.map(r => ({
+      location: r.location || 'Não informado',
+      total: r._count._all
+    }));
+
+    res.json(mapped);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Erro em by-location' });
+    console.error('Erro em /reports/by-location', err);
+    res.status(500).json({ message: 'Erro ao gerar relatório por localização' });
   }
 });
 
-// Resumo por sistema operacional
-router.get('/by-os', authMiddleware, async (req, res) => {
+// ------------------------------
+// 3) Distribuição por sistema operacional
+// ------------------------------
+// GET /api/reports/by-os
+router.get('/by-os', authMiddleware, async (_req, res) => {
   try {
     const result = await prisma.computer.groupBy({
       by: ['os'],
-      _count: { _all: true }
+      _count: { _all: true },
+      orderBy: {
+        _count: { _all: 'desc' }
+      }
     });
 
-    res.json(
-      result.map((r) => ({
-        os: r.os,
-        total: r._count._all
-      }))
-    );
+    const mapped = result.map(r => ({
+      os: r.os || 'Não informado',
+      total: r._count._all
+    }));
+
+    res.json(mapped);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Erro em by-os' });
+    console.error('Erro em /reports/by-os', err);
+    res.status(500).json({ message: 'Erro ao gerar relatório por sistema operacional' });
+  }
+});
+
+// ------------------------------
+// 4) Distribuição por fabricante (NOVO)
+// ------------------------------
+// GET /api/reports/by-manufacturer
+router.get('/by-manufacturer', authMiddleware, async (_req, res) => {
+  try {
+    const result = await prisma.computer.groupBy({
+      by: ['manufacturer'],
+      _count: { _all: true },
+      orderBy: {
+        _count: { _all: 'desc' }
+      }
+    });
+
+    const mapped = result.map(r => ({
+      manufacturer: r.manufacturer || 'Não informado',
+      total: r._count._all
+    }));
+
+    res.json(mapped);
+  } catch (err) {
+    console.error('Erro em /reports/by-manufacturer', err);
+    res.status(500).json({ message: 'Erro ao gerar relatório por fabricante' });
+  }
+});
+
+// ------------------------------
+// 5) Resumo geral (NOVO)
+// ------------------------------
+// GET /api/reports/summary?until=YYYY-MM-DD
+router.get('/summary', authMiddleware, async (req, res) => {
+  try {
+    const { until } = req.query;
+    const refDate = until ? new Date(until) : new Date();
+
+    if (isNaN(refDate.getTime())) {
+      return res.status(400).json({ message: 'Data inválida em "until"' });
+    }
+
+    const today = new Date(refDate);
+    today.setHours(0, 0, 0, 0);
+
+    const next7 = addDays(today, 7);
+
+    const [totalComputers, overdue, dueSoon7Days, noNextDate] = await Promise.all([
+      prisma.computer.count(),
+      prisma.computer.count({
+        where: {
+          nextPreventiveDate: {
+            lt: today
+          }
+        }
+      }),
+      prisma.computer.count({
+        where: {
+          nextPreventiveDate: {
+            gte: today,
+            lte: next7
+          }
+        }
+      }),
+      prisma.computer.count({
+        where: {
+          nextPreventiveDate: null
+        }
+      })
+    ]);
+
+    res.json({
+      until: today.toISOString().slice(0, 10),
+      totalComputers,
+      overdue,
+      dueSoon7Days,
+      noNextDate
+    });
+  } catch (err) {
+    console.error('Erro em /reports/summary', err);
+    res.status(500).json({ message: 'Erro ao gerar resumo geral' });
+  }
+});
+
+// ------------------------------
+// 6) Máquinas sem próxima data (NOVO)
+// ------------------------------
+// GET /api/reports/no-next-date
+router.get('/no-next-date', authMiddleware, async (_req, res) => {
+  try {
+    const list = await prisma.computer.findMany({
+      where: { nextPreventiveDate: null },
+      orderBy: { id: 'asc' },
+      select: {
+        id: true,
+        name: true,
+        location: true,
+        os: true,
+        manufacturer: true,
+        serialNumber: true
+      }
+    });
+
+    res.json({
+      total: list.length,
+      data: list
+    });
+  } catch (err) {
+    console.error('Erro em /reports/no-next-date', err);
+    res.status(500).json({ message: 'Erro ao gerar relatório de máquinas sem próxima preventiva' });
   }
 });
 
