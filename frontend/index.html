@@ -24,9 +24,7 @@
       --radius: 10px;
     }
 
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       margin: 0;
@@ -216,7 +214,7 @@
       overflow-y: auto;
     }
 
-    /* LOGIN CARD */
+    /* LOGIN */
 
     .center-wrapper {
       display: flex;
@@ -293,7 +291,7 @@
       min-height: 14px;
     }
 
-    /* DASHBOARD */
+    /* TÍTULOS / SEÇÕES */
 
     .page-header {
       display: flex;
@@ -313,66 +311,6 @@
       color: var(--text-soft);
     }
 
-    .stats-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-bottom: 12px;
-    }
-
-    .stat-card {
-      flex: 1;
-      min-width: 150px;
-      background: radial-gradient(circle at top left, #0b1120 0, #020617 60%);
-      border-radius: var(--radius);
-      padding: 10px 10px;
-      border: 1px solid #1f2937;
-    }
-
-    .stat-label {
-      font-size: 11px;
-      color: var(--text-soft);
-    }
-
-    .stat-value {
-      margin-top: 4px;
-      font-size: 18px;
-      font-weight: 600;
-    }
-
-    .stat-note {
-      font-size: 10px;
-      margin-top: 3px;
-      color: var(--text-soft);
-    }
-
-    /* CARDS */
-
-    .card {
-      background: rgba(15,23,42,0.95);
-      border-radius: var(--radius);
-      border: 1px solid #1f2937;
-      padding: 12px 12px 10px;
-      margin-bottom: 10px;
-    }
-
-    .card-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 8px;
-    }
-
-    .card-title {
-      font-size: 14px;
-      font-weight: 500;
-    }
-
-    .card-subtitle {
-      font-size: 11px;
-      color: var(--text-soft);
-    }
-
     .chip {
       font-size: 10px;
       padding: 3px 7px;
@@ -388,12 +326,65 @@
       border-color: rgba(56,189,248,0.4);
     }
 
-    /* GRID */
+    /* CARDS & GRID */
 
-    .flex {
+    .stats-row, .flex {
       display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .stat-card {
+      flex: 1;
+      min-width: 180px;
+      background: radial-gradient(circle at top left, #0b1120 0, #020617 60%);
+      border-radius: var(--radius);
+      padding: 10px 10px;
+      border: 1px solid #1f2937;
+    }
+
+    .stat-label {
+      font-size: 11px;
+      color: var(--text-soft);
+    }
+
+    .stat-value {
+      margin-top: 4px;
+      font-size: 20px;
+      font-weight: 600;
+    }
+
+    .stat-note {
+      font-size: 10px;
+      margin-top: 3px;
+      color: var(--text-soft);
+    }
+
+    .card {
+      background: rgba(15,23,42,0.95);
+      border-radius: var(--radius);
+      border: 1px solid #1f2937;
+      padding: 12px 12px 10px;
+      margin-bottom: 10px;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
       gap: 10px;
       flex-wrap: wrap;
+    }
+
+    .card-title {
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .card-subtitle {
+      font-size: 11px;
+      color: var(--text-soft);
     }
 
     .col {
@@ -433,8 +424,6 @@
       accent-color: var(--accent-strong);
     }
 
-    /* BUTTONS SMALL */
-
     .btn-sm {
       padding: 6px 10px;
       border-radius: 999px;
@@ -445,9 +434,7 @@
       cursor: pointer;
     }
 
-    .btn-sm:hover {
-      background: #020617;
-    }
+    .btn-sm:hover { background: #020617; }
 
     .btn-sm-primary {
       background: var(--accent-soft);
@@ -455,7 +442,11 @@
       border: 1px solid rgba(56,189,248,0.5);
     }
 
-    /* TEXT AREAS */
+    .btn-sm-danger {
+      background: var(--danger-soft);
+      color: var(--danger);
+      border: 1px solid rgba(239,68,68,0.6);
+    }
 
     pre {
       background: #020617;
@@ -468,15 +459,10 @@
       border: 1px solid #111827;
     }
 
-    /* TABS (PÁGINAS) */
+    /* PAGINAS */
 
-    .page-section {
-      display: none;
-    }
-
-    .page-section.active {
-      display: block;
-    }
+    .page-section { display: none; }
+    .page-section.active { display: block; }
 
     /* TOAST */
 
@@ -502,22 +488,16 @@
       color: var(--danger);
     }
 
-    .toast.show {
-      display: block;
-    }
+    .toast.show { display: block; }
 
     @media (max-width: 800px) {
-      .layout {
-        flex-direction: column;
-      }
+      .layout { flex-direction: column; }
       .sidebar {
         width: 100%;
         flex-direction: row;
         overflow-x: auto;
       }
-      .sidebar-title, .sidebar-footer {
-        display: none;
-      }
+      .sidebar-title, .sidebar-footer { display: none; }
     }
   </style>
 </head>
@@ -578,7 +558,11 @@
     <aside class="sidebar">
       <div>
         <div class="sidebar-title">Navegação</div>
-        <button class="nav-btn active" data-page="page-computers" onclick="changePage(this, 'page-computers')">
+        <button class="nav-btn active" data-page="page-dashboard" onclick="changePage(this, 'page-dashboard')">
+          <span class="icon">🏠</span>
+          <span>Dashboard</span>
+        </button>
+        <button class="nav-btn" data-page="page-computers" onclick="changePage(this, 'page-computers')">
           <span class="icon">💻</span>
           <span>Computadores</span>
         </button>
@@ -599,12 +583,67 @@
     </aside>
 
     <main class="content">
-      <!-- Página: Computadores -->
-      <section id="page-computers" class="page-section active">
+      <!-- DASHBOARD -->
+      <section id="page-dashboard" class="page-section active">
+        <div class="page-header">
+          <div>
+            <div class="page-title">Visão geral</div>
+            <div class="page-subtitle">Resumo rápido do ambiente de computadores</div>
+          </div>
+          <span class="chip chip-pill">Dashboard</span>
+        </div>
+
+        <div class="stats-row" id="dashboardTopStats">
+          <div class="stat-card">
+            <div class="stat-label">Total de computadores</div>
+            <div class="stat-value" id="dashTotalComputers">–</div>
+            <div class="stat-note">Quantidade total cadastrada no sistema</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Preventivas vencidas</div>
+            <div class="stat-value" id="dashOverdue">–</div>
+            <div class="stat-note">Computadores com preventiva já vencida</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Preventivas a vencer (até hoje)</div>
+            <div class="stat-value" id="dashDueSoon">–</div>
+            <div class="stat-note">Próx. preventiva até a data de hoje</div>
+          </div>
+        </div>
+
+        <div class="flex">
+          <div class="card" style="flex: 1; min-width:240px;">
+            <div class="card-header">
+              <div>
+                <div class="card-title">Distribuição por localização</div>
+                <div class="card-subtitle">Top 3 locais com mais computadores</div>
+              </div>
+            </div>
+            <div id="dashByLocation">
+              <div style="font-size:12px; color:var(--text-soft);">Carregando...</div>
+            </div>
+          </div>
+
+          <div class="card" style="flex: 1; min-width:240px;">
+            <div class="card-header">
+              <div>
+                <div class="card-title">Distribuição por sistema operacional</div>
+                <div class="card-subtitle">Top 3 sistemas mais usados</div>
+              </div>
+            </div>
+            <div id="dashByOs">
+              <div style="font-size:12px; color:var(--text-soft);">Carregando...</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- COMPUTADORES -->
+      <section id="page-computers" class="page-section">
         <div class="page-header">
           <div>
             <div class="page-title">Computadores cadastrados</div>
-            <div class="page-subtitle">Filtros, listagem e edição em massa</div>
+            <div class="page-subtitle">Filtros, cadastro manual, listagem e edição em massa</div>
           </div>
           <div class="chip chip-pill">Área principal</div>
         </div>
@@ -660,13 +699,65 @@
           </div>
         </div>
 
+        <!-- NOVO: CADASTRO MANUAL -->
+        <div class="card" id="createSection">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Cadastro manual de computador</div>
+              <div class="card-subtitle">Preencha os campos para adicionar um novo registro (ADMIN)</div>
+            </div>
+          </div>
+          <div class="flex">
+            <div class="col">
+              <label>Nome *</label>
+              <input id="newName" class="input" placeholder="Ex.: Computador 010" />
+            </div>
+            <div class="col">
+              <label>Fabricante</label>
+              <input id="newManufacturer" class="input" placeholder="Ex.: Dell" />
+            </div>
+            <div class="col">
+              <label>Localização *</label>
+              <input id="newLocation" class="input" placeholder="Ex.: Escritório A" />
+            </div>
+            <div class="col">
+              <label>Número de série *</label>
+              <input id="newSerial" class="input" placeholder="Ex.: SN99999" />
+            </div>
+            <div class="col">
+              <label>Sistema operacional *</label>
+              <input id="newOs" class="input" placeholder="Ex.: Windows 11" />
+            </div>
+          </div>
+
+          <div class="flex" style="margin-top:8px;">
+            <div class="col">
+              <label>Última preventiva</label>
+              <input type="date" id="newLast" class="input" />
+            </div>
+            <div class="col">
+              <label>Próx. preventiva</label>
+              <input type="date" id="newNext" class="input" />
+            </div>
+          </div>
+
+          <button class="btn-sm btn-sm-primary" style="margin-top:10px;" onclick="createComputer()">
+            Adicionar computador
+          </button>
+        </div>
+
         <div class="card">
           <div class="card-header">
             <div>
               <div class="card-title">Lista de computadores</div>
-              <div class="card-subtitle">Selecione registros para aplicar edição em massa</div>
+              <div class="card-subtitle">Selecione registros para aplicar edição ou exclusão em massa</div>
             </div>
-            <span class="chip"><span id="countSelected">0</span> selecionados</span>
+            <div style="display:flex; gap:8px; align-items:center;">
+              <span class="chip"><span id="countSelected">0</span> selecionados</span>
+              <span id="deleteSelectedWrapper" style="display:none;">
+                <button class="btn-sm btn-sm-danger" onclick="deleteSelected()">Excluir selecionados</button>
+              </span>
+            </div>
           </div>
 
           <div style="max-height: 320px; overflow:auto; border-radius:8px; border:1px solid #111827;">
@@ -723,7 +814,7 @@
         </div>
       </section>
 
-      <!-- Página: Importação CSV -->
+      <!-- IMPORTAÇÃO CSV -->
       <section id="page-import" class="page-section">
         <div class="page-header">
           <div>
@@ -756,7 +847,7 @@
         </div>
       </section>
 
-      <!-- Página: Relatórios -->
+      <!-- RELATÓRIOS -->
       <section id="page-reports" class="page-section">
         <div class="page-header">
           <div>
@@ -796,8 +887,7 @@
   <div id="toast" class="toast"></div>
 
   <script>
-    // ====== CONFIGURAÇÃO DA API ======
-    // Ajuste aqui se a URL da API mudar
+    // ====== CONFIG API ======
     const API_BASE = "https://prev-l0mb.onrender.com/api";
 
     let token = null;
@@ -810,9 +900,7 @@
       el.textContent = message;
       el.className = 'toast ' + (type === 'error' ? 'error' : '');
       el.classList.add('show');
-      setTimeout(() => {
-        el.classList.remove('show');
-      }, 3500);
+      setTimeout(() => el.classList.remove('show'), 3500);
     }
 
     function changePage(btn, pageId) {
@@ -821,6 +909,12 @@
 
       document.querySelectorAll('.page-section').forEach(sec => sec.classList.remove('active'));
       document.getElementById(pageId).classList.add('active');
+
+      if (pageId === 'page-dashboard') {
+        loadDashboardStats();
+      } else if (pageId === 'page-computers') {
+        loadComputers();
+      }
     }
 
     function updateSelectedCount() {
@@ -832,6 +926,14 @@
     function initialAvatarText(name) {
       if (!name) return '?';
       return name.trim().charAt(0).toUpperCase();
+    }
+
+    function todayIsoDate() {
+      const d = new Date();
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
     }
 
     // ====== AUTENTICAÇÃO ======
@@ -853,8 +955,11 @@
         const isAdmin = user.role === 'ADMIN';
         document.getElementById('bulkSection').style.display = isAdmin ? 'block' : 'none';
         document.getElementById('importSection').style.display = isAdmin ? 'block' : 'none';
+        document.getElementById('createSection').style.display = isAdmin ? 'block' : 'none';
+        document.getElementById('deleteSelectedWrapper').style.display = isAdmin ? 'inline-flex' : 'none';
 
-        loadComputers();
+        // Carrega dashboard ao logar
+        loadDashboardStats();
       } else {
         document.getElementById('loginSection').style.display = 'flex';
         document.getElementById('appSection').style.display = 'none';
@@ -893,6 +998,114 @@
         console.error(err);
         msgEl.innerText = "Erro ao conectar ao servidor";
         showToast("Erro ao conectar ao servidor", "error");
+      }
+    }
+
+    // ====== DASHBOARD ======
+    async function loadDashboardStats() {
+      if (!token) return;
+
+      const today = todayIsoDate();
+
+      // 1) Total de computadores (usando pageSize=1 só pra pegar o "total")
+      try {
+        const resComputers = await fetch(API_BASE + "/computers?page=1&pageSize=1", {
+          headers: { Authorization: "Bearer " + token }
+        });
+        const dataComputers = await resComputers.json();
+        if (resComputers.ok) {
+          document.getElementById('dashTotalComputers').innerText = dataComputers.total ?? '0';
+        } else {
+          document.getElementById('dashTotalComputers').innerText = '–';
+        }
+      } catch (err) {
+        console.error(err);
+        document.getElementById('dashTotalComputers').innerText = '–';
+      }
+
+      // 2) Preventivas pendentes (até hoje)
+      try {
+        const params = new URLSearchParams();
+        params.append('until', today);
+        const resPending = await fetch(API_BASE + "/reports/preventives-pending?" + params.toString(), {
+          headers: { Authorization: "Bearer " + token }
+        });
+        const dataPending = await resPending.json();
+        if (resPending.ok) {
+          document.getElementById('dashOverdue').innerText = dataPending.overdue ?? 0;
+          document.getElementById('dashDueSoon').innerText = dataPending.due_soon ?? 0;
+        } else {
+          document.getElementById('dashOverdue').innerText = '–';
+          document.getElementById('dashDueSoon').innerText = '–';
+        }
+      } catch (err) {
+        console.error(err);
+        document.getElementById('dashOverdue').innerText = '–';
+        document.getElementById('dashDueSoon').innerText = '–';
+      }
+
+      // 3) Distribuição por localização
+      try {
+        const resLoc = await fetch(API_BASE + "/reports/by-location", {
+          headers: { Authorization: "Bearer " + token }
+        });
+        const dataLoc = await resLoc.json();
+        const cont = document.getElementById('dashByLocation');
+        if (resLoc.ok && Array.isArray(dataLoc) && dataLoc.length > 0) {
+          const top3 = dataLoc
+            .filter(r => r.location)
+            .sort((a,b) => b.total - a.total)
+            .slice(0, 3);
+
+          if (top3.length === 0) {
+            cont.innerHTML = '<div style="font-size:12px; color:var(--text-soft);">Nenhuma localização cadastrada.</div>';
+          } else {
+            cont.innerHTML = top3.map(r => `
+              <div style="display:flex; justify-content:space-between; align-items:center; font-size:12px; padding:4px 0;">
+                <span>${r.location}</span>
+                <span style="color:var(--accent-strong); font-weight:500;">${r.total}</span>
+              </div>
+            `).join('');
+          }
+        } else {
+          cont.innerHTML = '<div style="font-size:12px; color:var(--text-soft);">Nenhum dado de localização.</div>';
+        }
+      } catch (err) {
+        console.error(err);
+        document.getElementById('dashByLocation').innerHTML =
+          '<div style="font-size:12px; color:var(--text-soft);">Erro ao carregar distribuição.</div>';
+      }
+
+      // 4) Distribuição por sistema operacional
+      try {
+        const resOs = await fetch(API_BASE + "/reports/by-os", {
+          headers: { Authorization: "Bearer " + token }
+        });
+        const dataOs = await resOs.json();
+        const cont = document.getElementById('dashByOs');
+        if (resOs.ok && Array.isArray(dataOs) && dataOs.length > 0) {
+          const top3 = dataOs
+            .filter(r => r.os)
+            .sort((a,b) => b.total - a.total)
+            .slice(0, 3);
+
+          if (top3.length === 0) {
+            cont.innerHTML = '<div style="font-size:12px; color:var(--text-soft);">Nenhum sistema operacional cadastrado.</div>';
+          } else {
+            cont.innerHTML = top3.map(r => `
+              <div style="display:flex; justify-content:space-between; align-items:center; font-size:12px; padding:4px 0;">
+                <span>${r.os}</span>
+                <span style="color:var(--accent-strong); font-weight:500;">${r.total}</span>
+              </div>
+            `).join('');
+          }
+        } else {
+          cont.innerHTML = '<div style="font-size:12px; color:var(--text-soft);">Nenhum dado de SO.</div>';
+        }
+      } catch (err) {
+        console.error(err);
+        document.getElementById('dashByOs').innerHTML =
+          '<div style="font-size:12px; color:var(--text-soft);">Erro ao carregar distribuição.</div>';
       }
     }
 
@@ -935,7 +1148,6 @@
         computers = data.data;
         renderComputers();
 
-        // Atualiza stats no topo
         document.getElementById('statTotalComputers').innerText = data.total ?? computers.length;
         document.getElementById('statNextFilter').innerText = next_from || next_to ? "Filtrado" : "Sem filtro";
       } catch (err) {
@@ -974,6 +1186,106 @@
       updateSelectedCount();
     }
 
+    // NOVO: criar computador manualmente
+    async function createComputer() {
+      if (!token || !currentUser || currentUser.role !== 'ADMIN') {
+        showToast("Apenas ADMIN pode cadastrar computadores.", "error");
+        return;
+      }
+
+      const name = document.getElementById('newName').value.trim();
+      const manufacturer = document.getElementById('newManufacturer').value.trim();
+      const location = document.getElementById('newLocation').value.trim();
+      const serialNumber = document.getElementById('newSerial').value.trim();
+      const os = document.getElementById('newOs').value.trim();
+      const lastPreventiveDate = document.getElementById('newLast').value;
+      const nextPreventiveDate = document.getElementById('newNext').value;
+
+      if (!name || !location || !serialNumber || !os) {
+        showToast("Preencha os campos obrigatórios (*).", "error");
+        return;
+      }
+
+      try {
+        const res = await fetch(API_BASE + "/computers", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "Bearer " + token
+          },
+          body: JSON.stringify({
+            name,
+            manufacturer: manufacturer || null,
+            location,
+            serialNumber,
+            os,
+            lastPreventiveDate: lastPreventiveDate || null,
+            nextPreventiveDate: nextPreventiveDate || null
+          })
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          showToast(data.message || "Erro ao criar computador.", "error");
+          return;
+        }
+
+        // limpa campos
+        document.getElementById('newName').value = "";
+        document.getElementById('newManufacturer').value = "";
+        document.getElementById('newLocation').value = "";
+        document.getElementById('newSerial').value = "";
+        document.getElementById('newOs').value = "";
+        document.getElementById('newLast').value = "";
+        document.getElementById('newNext').value = "";
+
+        showToast("Computador cadastrado com sucesso!", "success");
+        loadComputers();
+        loadDashboardStats();
+      } catch (err) {
+        console.error(err);
+        showToast("Erro ao conectar ao servidor.", "error");
+      }
+    }
+
+    // NOVO: excluir selecionados
+    async function deleteSelected() {
+      if (!token || !currentUser || currentUser.role !== 'ADMIN') {
+        showToast("Apenas ADMIN pode excluir computadores.", "error");
+        return;
+      }
+
+      const ids = Array.from(document.querySelectorAll('.rowCheck'))
+        .filter((c) => c.checked)
+        .map((c) => Number(c.getAttribute('data-id')));
+
+      if (ids.length === 0) {
+        showToast("Selecione ao menos um computador para excluir.", "error");
+        return;
+      }
+
+      const confirma = window.confirm(
+        `Tem certeza que deseja excluir ${ids.length} computador(es)? Essa ação não pode ser desfeita.`
+      );
+      if (!confirma) return;
+
+      try {
+        // exclui em sequência simples (poderia ser Promise.all)
+        for (const id of ids) {
+          await fetch(API_BASE + "/computers/" + id, {
+            method: "DELETE",
+            headers: { Authorization: "Bearer " + token }
+          });
+        }
+        showToast("Computadores excluídos com sucesso.", "success");
+        loadComputers();
+        loadDashboardStats();
+      } catch (err) {
+        console.error(err);
+        showToast("Erro ao excluir computadores.", "error");
+      }
+    }
+
+    // ====== BULK UPDATE ======
     async function bulkUpdate() {
       if (!token || !currentUser || currentUser.role !== 'ADMIN') {
         alert("Apenas ADMIN pode usar edição em massa.");
@@ -1030,6 +1342,7 @@
         msgEl.innerText = "Registros atualizados: " + data.updated_count;
         showToast("Edição em massa concluída!", "success");
         loadComputers();
+        loadDashboardStats();
       } catch (err) {
         console.error(err);
         msgEl.innerText = "Erro ao conectar ao servidor";
@@ -1070,6 +1383,7 @@
         resultEl.innerText = JSON.stringify(data, null, 2);
         showToast("Importação concluída!", "success");
         loadComputers();
+        loadDashboardStats();
       } catch (err) {
         console.error(err);
         resultEl.innerText = "Erro ao conectar ao servidor";
