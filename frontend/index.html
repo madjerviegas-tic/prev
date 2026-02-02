@@ -856,38 +856,57 @@
 
       <!-- RELATÓRIOS -->
       <section id="page-reports" class="page-section">
-        <div class="page-header">
-          <div>
-            <div class="page-title">Relatórios de preventivas</div>
-            <div class="page-subtitle">Acompanhe pendências e estatísticas básicas</div>
-          </div>
-          <div class="chip chip-pill">Visão de gestão</div>
+  <div class="page-header">
+    <div>
+      <div class="page-title">Relatórios de preventivas</div>
+      <div class="page-subtitle">Escolha o tipo de relatório e gere os dados</div>
+    </div>
+    <div class="chip chip-pill">Visão de gestão</div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <div>
+        <div class="card-title">Configuração do relatório</div>
+        <div class="card-subtitle">
+          Selecione o tipo de relatório que deseja visualizar. Alguns permitem informar uma data de referência.
         </div>
+      </div>
+    </div>
 
-        <div class="card">
-          <div class="card-header">
-            <div>
-              <div class="card-title">Preventivas pendentes</div>
-              <div class="card-subtitle">
-                Liste equipamentos com preventiva vencida ou a vencer até a data selecionada.
-              </div>
-            </div>
-          </div>
+    <div class="flex">
+      <div class="col" style="max-width:260px;">
+        <label>Tipo de relatório</label>
+        <select id="reportType" class="input">
+          <option value="summary">Resumo geral de preventivas</option>
+          <option value="pending">Preventivas pendentes até a data</option>
+          <option value="by-location">Distribuição por localização</option>
+          <option value="by-os">Distribuição por sistema operacional</option>
+          <option value="by-manufacturer">Distribuição por fabricante</option>
+          <option value="no-next-date">Máquinas sem próxima preventiva</option>
+        </select>
+      </div>
 
-          <div class="flex">
-            <div class="col" style="max-width:220px;">
-              <label>Listar até a data</label>
-              <input type="date" id="rUntil" class="input" />
-            </div>
-          </div>
-
-          <button class="btn-sm btn-sm-primary" style="margin-top:10px;" onclick="loadPending()">Gerar relatório</button>
-
-          <div style="margin-top:10px;">
-            <pre id="pendingResult">{}</pre>
-          </div>
+      <div class="col" style="max-width:220px;">
+        <label>Data de referência (opcional)</label>
+        <input type="date" id="rUntil" class="input" />
+        <div style="font-size:11px; color:var(--text-soft); margin-top:4px;">
+          Usada em: "Resumo geral" e "Pendentes até a data".
         </div>
-      </section>
+      </div>
+    </div>
+
+    <button class="btn-sm btn-sm-primary" style="margin-top:10px;" onclick="runReport()">
+      Gerar relatório
+    </button>
+
+    <div style="margin-top:10px;">
+      <label style="font-size:11px;">Resultado do relatório (JSON)</label>
+      <pre id="pendingResult">{}</pre>
+    </div>
+  </div>
+</section>
+
     </main>
   </div>
 
