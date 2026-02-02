@@ -1426,33 +1426,65 @@
     }
 
     // ====== RELATÓRIOS ======
-    async function loadPending() {
-      if (!token) return;
-      const until = document.getElementById('rUntil').value;
-      const params = new URLSearchParams();
-      if (until) params.append('until', until);
+    // ====== RELATÓRIOS ======
+async function runReport() {
+  if (!token) return;
 
-      const resultEl = document.getElementById('pendingResult');
-      resultEl.innerText = "Carregando...";
+  const type = document.getElementById('reportType').value;
+  const until = document.getElementById('rUntil').value;
+  const resultEl = document.getElementById('pendingResult');
+  resultEl.innerText = "Carregando...";
 
-      try {
-        const res = await fetch(API_BASE + "/reports/preventives-pending?" + params.toString(), {
-          headers: { Authorization: "Bearer " + token }
-        });
-        const data = await res.json();
-        if (!res.ok) {
-          resultEl.innerText = data.message || "Erro";
-          showToast(data.message || "Erro ao gerar relatório", "error");
-          return;
-        }
-        resultEl.innerText = JSON.stringify(data, null, 2);
-        showToast("Relatório gerado com sucesso!", "success");
-      } catch (err) {
-        console.error(err);
-        resultEl.innerText = "Erro ao conectar ao servidor";
-        showToast("Erro ao conectar ao servidor", "error");
-      }
+  let url = "";
+  let params = new URLSearchParams();
+
+  // Define URL e parâmetros conforme tipo
+  switch (type) {
+    case "summary":
+      url = "/reports/summary";
+      if (until) params.append("until", until);
+      break;
+    case "pending":
+      url = "/reports/preventives-pending";
+      if (until) params.append("until", until);
+      break;
+    case "by-location":
+      url = "/reports/by-location";
+      break;
+    case "by-os":
+      url = "/reports/by-os";
+      break;
+    case "by-manufacturer":
+      url = "/reports/by-manufacturer";
+      break;
+    case "no-next-date":
+      url = "/reports/no-next-date";
+      break;
+    default:
+      resultEl.innerText = "Tipo de relatório inválido.";
+      return;
+  }
+
+  try {
+    const res = await fetch(API_BASE + url + (params.toString() ? "?" + params.toString() : ""), {
+      headers: { Authorization: "Bearer " + token }
+    });
+    const data = await res.json();
+
+    if (!res.ok) {
+      resultEl.innerText = data.message || "Erro ao gerar relatório";
+      showToast(data.message || "Erro ao gerar relatório", "error");
+      return;
     }
+
+    resultEl.innerText = JSON.stringify(data, null, 2);
+    showToast("Relatório gerado com sucesso!", "success");
+  } catch (err) {
+    console.error(err);
+    resultEl.innerText = "Erro ao conectar ao servidor";
+    showToast("Erro ao conectar ao servidor", "error");
+  }
+}
   </script>
 </body>
 </html>
