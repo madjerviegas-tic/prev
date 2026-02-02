@@ -1128,20 +1128,27 @@
 
     async function loadComputers() {
       if (!token) return;
-
+    
       const search = document.getElementById('fSearch').value;
       const location = document.getElementById('fLocation').value;
       const os = document.getElementById('fOs').value;
       const next_from = document.getElementById('fNextFrom').value;
       const next_to = document.getElementById('fNextTo').value;
-
+      const all = document.getElementById('fAll') ? document.getElementById('fAll').checked : false;
+    
       const params = new URLSearchParams();
       if (search) params.append('search', search);
       if (location) params.append('location', location);
       if (os) params.append('os', os);
       if (next_from) params.append('next_from', next_from);
       if (next_to) params.append('next_to', next_to);
-
+    
+      // 🔹 se marcar "Carregar todas as máquinas", pede uma página só com um pageSize bem alto
+      if (all) {
+        params.append('page', '1');
+        params.append('pageSize', '10000'); // ajuste esse número se precisar
+      }
+    
       try {
         const res = await fetch(API_BASE + "/computers?" + params.toString(), {
           headers: { Authorization: "Bearer " + token }
@@ -1154,15 +1161,16 @@
         }
         computers = data.data;
         renderComputers();
-
+    
         document.getElementById('statTotalComputers').innerText = data.total ?? computers.length;
-        document.getElementById('statNextFilter').innerText = next_from || next_to ? "Filtrado" : "Sem filtro";
+        document.getElementById('statNextFilter').innerText = (next_from || next_to) ? "Filtrado" : "Sem filtro";
       } catch (err) {
         console.error(err);
         alert("Erro ao conectar ao servidor");
         showToast("Erro ao conectar ao servidor", "error");
       }
     }
+
 
     function renderComputers() {
       const tbody = document.getElementById('computersTableBody');
