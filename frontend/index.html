@@ -1619,6 +1619,128 @@
       }
     }
 
+    function getReportTypeLabel(type) {
+  switch (type) {
+    case "summary": return "Resumo geral de preventivas";
+    case "pending": return "Preventivas pendentes até a data";
+    case "by-location": return "Distribuição por localização";
+    case "by-os": return "Distribuição por sistema operacional";
+    case "by-manufacturer": return "Distribuição por fabricante";
+    case "no-next-date": return "Máquinas sem próxima preventiva";
+    default: return "Relatório";
+  }
+}
+
+function exportReportPdf() {
+  const type = document.getElementById('reportType').value;
+  const visual = document.getElementById('reportVisual');
+
+  if (!visual || !visual.innerHTML.trim() || !lastReportJson) {
+    showToast("Gere um relatório antes de exportar para PDF.", "error");
+    return;
+  }
+
+  const title = getReportTypeLabel(type);
+  const now = new Date();
+  const generatedAt = now.toLocaleString();
+
+  // Abre uma nova janela com layout limpo para impressão
+  const win = window.open('', '_blank');
+  win.document.write(`
+    <html>
+      <head>
+        <title>${title}</title>
+        <meta charset="UTF-8" />
+        <style>
+          body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: #ffffff;
+            color: #111827;
+            margin: 16px;
+          }
+          h1 {
+            font-size: 20px;
+            margin-bottom: 4px;
+          }
+          .subtitle {
+            font-size: 11px;
+            color: #6b7280;
+            margin-bottom: 14px;
+          }
+          .section {
+            margin-top: 10px;
+          }
+          /* Ajuste básico para tabelas e cartões */
+          table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11px;
+          }
+          th, td {
+            border: 1px solid #e5e7eb;
+            padding: 4px 6px;
+          }
+          th {
+            background: #f3f4f6;
+            text-align: left;
+          }
+          .report-card,
+          .stat-card {
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+            background: #f9fafb;
+            padding: 8px;
+            margin-bottom: 8px;
+          }
+          .report-card-label,
+          .stat-label {
+            font-size: 11px;
+            color: #6b7280;
+          }
+          .report-card-value,
+          .stat-value {
+            font-size: 16px;
+            font-weight: 600;
+          }
+          .bar-track {
+            border-radius: 999px;
+            background: #e5e7eb;
+          }
+          .bar-fill {
+            background: #0ea5e9;
+          }
+          .bar-label {
+            font-size: 11px;
+          }
+          .bar-value {
+            font-size: 11px;
+          }
+
+          @page {
+            margin: 16mm;
+          }
+        </style>
+      </head>
+      <body>
+        <h1>${title}</h1>
+        <div class="subtitle">
+          Gerado em ${generatedAt}
+        </div>
+        <div class="section">
+          ${visual.innerHTML}
+        </div>
+      </body>
+    </html>
+  `);
+
+  win.document.close();
+  win.focus();
+
+  // Abre o diálogo de impressão (no navegador, escolha "Salvar como PDF")
+  win.print();
+}
+
+
     function renderReportVisual(type, data) {
       const visual = document.getElementById('reportVisual');
 
