@@ -16,7 +16,7 @@ model User {
   id             Int             @id @default(autoincrement())
   name           String
   email          String          @unique
-  passwordHash   String
+  passwordHash: hashed,
   role           Role            @default(USER)
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
