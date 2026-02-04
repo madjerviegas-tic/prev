@@ -6,6 +6,7 @@ const authRoutes = require('./routes/authRoutes');
 const computerRoutes = require('./routes/computerRoutes');
 const importRoutes = require('./routes/importRoutes');
 const reportRoutes = require('./routes/reportRoutes');
+const userRoutes = require('./routes/userRoutes');
 
 dotenv.config();
 
@@ -22,6 +23,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/computers', computerRoutes);
 app.use('/api/import', importRoutes);
 app.use('/api/reports', reportRoutes);
+app.use('/api/users', userRoutes);
 
 // Rota raiz
 app.get('/', (req, res) => {
