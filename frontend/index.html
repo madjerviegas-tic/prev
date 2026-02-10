@@ -1138,21 +1138,20 @@
     }
 
     function changePage(btn, pageId) {
-      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-    
-      document.querySelectorAll('.page-section').forEach(sec => sec.classList.remove('active'));
-      document.getElementById(pageId).classList.add('active');
-    
-      if (pageId === 'page-dashboard') {
-        loadDashboardStats();
-      } else if (pageId === 'page-computers') {
-        loadComputers();
-      } else if (pageId === 'page-users') {
-        loadUsers();
-      }
-    }
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
 
+  document.querySelectorAll('.page-section').forEach(sec => sec.classList.remove('active'));
+  document.getElementById(pageId).classList.add('active');
+
+  if (pageId === 'page-dashboard') {
+    loadDashboardStats();
+  } else if (pageId === 'page-computers') {
+    loadComputers();
+  } else if (pageId === 'page-users') {
+    loadUsers(); // 👈 aqui garante o carregamento da lista
+  }
+}
 
     function updateSelectedCount() {
       const count = Array.from(document.querySelectorAll('.rowCheck'))
