@@ -1395,6 +1395,20 @@
             if (!tbody) return;
           
             tbody.innerHTML = "";
+          
+            if (!users || users.length === 0) {
+              tbody.innerHTML = `
+                <tr>
+                  <td colspan="6" style="text-align:center; font-size:12px; color:var(--text-soft); padding:8px;">
+                    Nenhum usuário encontrado.
+                  </td>
+                </tr>
+              `;
+              const el = document.getElementById('countUsersSelected');
+              if (el) el.innerText = "0";
+              return;
+            }
+          
             users.forEach(u => {
               const created = u.createdAt ? new Date(u.createdAt).toLocaleString() : "";
               const tr = document.createElement('tr');
@@ -1414,6 +1428,7 @@
             });
             updateUsersSelectedCount();
           }
+
           
           function updateUsersSelectedCount() {
             const count = Array.from(document.querySelectorAll('.userRowCheck'))
