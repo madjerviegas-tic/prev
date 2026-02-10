@@ -3,7 +3,7 @@ const express = require('express');
 const router = express.Router();
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
-const { authMiddleware } = require('../middlewares/authMiddleware');
+const { authMiddleware } = require('../authMiddleware');
 
 // Helper para somar dias
 function addDays(date, days) {
