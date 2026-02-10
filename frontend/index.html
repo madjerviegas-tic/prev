@@ -982,85 +982,6 @@
                 <option value="by-manufacturer">Distribuição por fabricante</option>
                 <option value="no-next-date">Máquinas sem próxima preventiva</option>
               </select>
-            <!-- USUÁRIOS (ADMIN) -->
-                <section id="page-users" class="page-section">
-                  <div class="page-header">
-                    <div>
-                      <div class="page-title">Gestão de usuários</div>
-                      <div class="page-subtitle">Cadastrar novos usuários, definir perfis e remover acessos</div>
-                    </div>
-                    <div class="chip chip-pill">Somente ADMIN</div>
-                  </div>
-                
-                  <div class="card">
-                    <div class="card-header">
-                      <div>
-                        <div class="card-title">Usuários do sistema</div>
-                        <div class="card-subtitle">
-                          Lista de usuários cadastrados. Selecione para remoção em massa.
-                        </div>
-                      </div>
-                      <div style="display:flex; gap:8px; align-items:center;">
-                        <span class="chip"><span id="countUsersSelected">0</span> selecionados</span>
-                        <button class="btn-sm btn-sm-danger" onclick="deleteSelectedUsers()">Remover selecionados</button>
-                      </div>
-                    </div>
-                
-                    <div class="report-table-wrapper">
-                      <table>
-                        <thead>
-                          <tr>
-                            <th style="width:32px;"><input type="checkbox" id="selectAllUsers" onclick="toggleSelectAllUsers(this)" /></th>
-                            <th style="width:50px;">ID</th>
-                            <th>Nome</th>
-                            <th>Email</th>
-                            <th style="width:80px;">Perfil</th>
-                            <th style="width:120px;">Criado em</th>
-                          </tr>
-                        </thead>
-                        <tbody id="usersTableBody"></tbody>
-                      </table>
-                    </div>
-                  </div>
-                
-                  <div class="card">
-                    <div class="card-header">
-                      <div>
-                        <div class="card-title">Novo usuário</div>
-                        <div class="card-subtitle">
-                          Crie um usuário com perfil de acesso. Apenas ADMIN pode criar.
-                        </div>
-                      </div>
-                    </div>
-                
-                    <div class="flex">
-                      <div class="col">
-                        <label>Nome *</label>
-                        <input id="uName" class="input" placeholder="Ex.: João da Silva" />
-                      </div>
-                      <div class="col">
-                        <label>Email *</label>
-                        <input id="uEmail" class="input" placeholder="Ex.: joao@empresa.com" />
-                      </div>
-                      <div class="col">
-                        <label>Senha *</label>
-                        <input id="uPassword" type="password" class="input" placeholder="Senha inicial" />
-                      </div>
-                      <div class="col" style="max-width:160px;">
-                        <label>Perfil</label>
-                        <select id="uRole" class="input">
-                          <option value="USER">USER</option>
-                          <option value="ADMIN">ADMIN</option>
-                        </select>
-                      </div>
-                    </div>
-                
-                    <button class="btn-sm btn-sm-primary" style="margin-top:10px;" onclick="createUser()">
-                      Criar usuário
-                    </button>
-                    <div id="userMessage" style="font-size:12px; margin-top:6px; color:var(--text-soft);"></div>
-                  </div>
-                </section>
             </div>
 
             <div class="col" style="max-width:220px;">
@@ -1112,6 +1033,87 @@
           </div>
         </div>
       </section>
+    <section id="page-users" class="page-section">
+        <div class="page-header">
+          <div>
+            <div class="page-title">Gestão de usuários</div>
+            <div class="page-subtitle">Cadastrar, listar e remover usuários do sistema</div>
+          </div>
+          <div class="chip chip-pill">Somente ADMIN</div>
+        </div>
+      
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Usuários do sistema</div>
+              <div class="card-subtitle">
+                Lista de usuários cadastrados. Selecione para remoção em massa.
+              </div>
+            </div>
+            <div style="display:flex; gap:8px; align-items:center;">
+              <span class="chip"><span id="countUsersSelected">0</span> selecionados</span>
+              <button class="btn-sm btn-sm-danger" onclick="deleteSelectedUsers()">Remover selecionados</button>
+            </div>
+          </div>
+      
+          <div class="report-table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width:32px;"><input type="checkbox" id="selectAllUsers" onclick="toggleSelectAllUsers(this)" /></th>
+                  <th style="width:50px;">ID</th>
+                  <th>Nome</th>
+                  <th>Email</th>
+                  <th style="width:80px;">Perfil</th>
+                  <th style="width:140px;">Criado em</th>
+                </tr>
+              </thead>
+              <tbody id="usersTableBody">
+                <!-- preenchido via JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Novo usuário</div>
+              <div class="card-subtitle">
+                Crie um usuário com perfil de acesso. Apenas ADMIN pode criar.
+              </div>
+            </div>
+          </div>
+      
+          <div class="flex">
+            <div class="col">
+              <label>Nome *</label>
+              <input id="uName" class="input" placeholder="Ex.: João da Silva" />
+            </div>
+            <div class="col">
+              <label>Email *</label>
+              <input id="uEmail" class="input" placeholder="Ex.: joao@empresa.com" />
+            </div>
+            <div class="col">
+              <label>Senha *</label>
+              <input id="uPassword" type="password" class="input" placeholder="Senha inicial" />
+            </div>
+            <div class="col" style="max-width:160px;">
+              <label>Perfil</label>
+              <select id="uRole" class="input">
+                <option value="USER">USER</option>
+                <option value="ADMIN">ADMIN</option>
+              </select>
+            </div>
+          </div>
+      
+          <button class="btn-sm btn-sm-primary" style="margin-top:10px;" onclick="createUser()">
+            Criar usuário
+          </button>
+          <div id="userMessage" style="font-size:12px; margin-top:6px; color:var(--text-soft);"></div>
+        </div>
+      </section>
+
     </main>
   </div>
 
