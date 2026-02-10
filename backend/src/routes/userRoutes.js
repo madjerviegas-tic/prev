@@ -4,7 +4,8 @@ const router = express.Router();
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 const bcrypt = require('bcryptjs');
-const { authMiddleware } = require('../middlewares/authMiddleware');
+const { authMiddleware } = require('../authMiddleware');
+
 //            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //   esse caminho é a partir de src/routes → src/middlewares
 
