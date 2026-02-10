@@ -5,6 +5,8 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 const bcrypt = require('bcryptjs');
 const { authMiddleware } = require('../middlewares/authMiddleware');
+//            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//   esse caminho é a partir de src/routes → src/middlewares
 
 // Middleware simples para garantir ADMIN
 function ensureAdmin(req, res, next) {
@@ -54,8 +56,8 @@ router.post('/', authMiddleware, ensureAdmin, async (req, res) => {
       data: {
         name,
         email,
-        // 🔴 ATENÇÃO AQUI:
-        // Se no seu Prisma o campo é "passwordHash", troque "password" por "passwordHash"
+        // ❗ ATENÇÃO: troque "password" por "passwordHash"
+        // se no seu schema.prisma o campo for passwordHash
         password: hashed,
         role: role === 'ADMIN' ? 'ADMIN' : 'USER'
       },
