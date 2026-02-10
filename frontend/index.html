@@ -1066,6 +1066,7 @@
                   <th>Email</th>
                   <th style="width:80px;">Perfil</th>
                   <th style="width:140px;">Criado em</th>
+                  <th style="width:160px;">Ações</th>
                 </tr>
               </thead>
               <tbody id="usersTableBody">
@@ -1106,11 +1107,14 @@
               </select>
             </div>
           </div>
-      
-          <button class="btn-sm btn-sm-primary" style="margin-top:10px;" onclick="createUser()">
-            Criar usuário
-          </button>
-          <div id="userMessage" style="font-size:12px; margin-top:6px; color:var(--text-soft);"></div>
+              <button id="userFormSubmitBtn" class="btn-sm btn-sm-primary" style="margin-top:10px;" onclick="submitUserForm()">
+                  Criar usuário
+                </button>
+                <button id="userFormCancelEditBtn" class="btn-sm" style="margin-top:10px; margin-left:8px; display:none;" onclick="cancelEditUser()">
+                  Cancelar edição
+                </button>
+                <div id="userMessage" style="font-size:12px; margin-top:6px; color:var(--text-soft);"></div>
+
         </div>
       </section>
 
@@ -1127,6 +1131,7 @@
       let currentUser = null;
       let computers = [];
       let users = [];           // 👈 NOVO
+      let editingUserId = null; // 👈 novo
       let lastReportJson = null;
       let lastReportType = null;
 
@@ -1393,43 +1398,98 @@
           }
           
           function renderUsers() {
-            const tbody = document.getElementById('usersTableBody');
-            if (!tbody) return;
-          
-            tbody.innerHTML = "";
-          
-            if (!users || users.length === 0) {
-              tbody.innerHTML = `
-                <tr>
-                  <td colspan="6" style="text-align:center; font-size:12px; color:var(--text-soft); padding:8px;">
-                    Nenhum usuário encontrado.
+              const tbody = document.getElementById('usersTableBody');
+              if (!tbody) return;
+            
+              tbody.innerHTML = "";
+            
+              if (!users || users.length === 0) {
+                tbody.innerHTML = `
+                  <tr>
+                    <td colspan="7" style="text-align:center; font-size:12px; color:var(--text-soft); padding:8px;">
+                      Nenhum usuário encontrado.
+                    </td>
+                  </tr>
+                `;
+                const el = document.getElementById('countUsersSelected');
+                if (el) el.innerText = "0";
+                return;
+              }
+            
+              users.forEach(u => {
+                const created = u.createdAt ? new Date(u.createdAt).toLocaleString() : "";
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                  <td><input type="checkbox" class="userRowCheck" data-id="${u.id}" /></td>
+                  <td>${u.id}</td>
+                  <td>${u.name}</td>
+                  <td>${u.email}</td>
+                  <td>${u.role}</td>
+                  <td>${created}</td>
+                  <td>
+                    <button class="btn-sm" onclick="startEditUser(${u.id})">Editar</button>
+                    <button class="btn-sm" onclick="resetPasswordUser(${u.id})">Redefinir senha</button>
                   </td>
-                </tr>
-              `;
-              const el = document.getElementById('countUsersSelected');
-              if (el) el.innerText = "0";
-              return;
+                `;
+                tbody.appendChild(tr);
+              });
+            
+              document.querySelectorAll('.userRowCheck').forEach(chk => {
+                chk.addEventListener('change', updateUsersSelectedCount);
+              });
+              updateUsersSelectedCount();
             }
-          
-            users.forEach(u => {
-              const created = u.createdAt ? new Date(u.createdAt).toLocaleString() : "";
-              const tr = document.createElement('tr');
-              tr.innerHTML = `
-                <td><input type="checkbox" class="userRowCheck" data-id="${u.id}" /></td>
-                <td>${u.id}</td>
-                <td>${u.name}</td>
-                <td>${u.email}</td>
-                <td>${u.role}</td>
-                <td>${created}</td>
-              `;
-              tbody.appendChild(tr);
-            });
-          
-            document.querySelectorAll('.userRowCheck').forEach(chk => {
-              chk.addEventListener('change', updateUsersSelectedCount);
-            });
-            updateUsersSelectedCount();
-          }
+
+            function startEditUser(id) {
+              const user = users.find(u => u.id === id);
+              if (!user) {
+                showToast("Usuário não encontrado na lista carregada.", "error");
+                return;
+              }
+              fillUserForm(user);
+              setUserFormModeEdit(user);
+            }
+
+    
+          //Perto do bloco do usuario
+            function fillUserForm(user) {
+                document.getElementById('uName').value = user.name || "";
+                document.getElementById('uEmail').value = user.email || "";
+                document.getElementById('uRole').value = user.role || "USER";
+              
+                // senha só é usada na criação; deixamos em branco na edição
+                document.getElementById('uPassword').value = "";
+              }
+              
+              function setUserFormModeCreate() {
+                editingUserId = null;
+                const btn = document.getElementById('userFormSubmitBtn');
+                const cancelBtn = document.getElementById('userFormCancelEditBtn');
+                const msgEl = document.getElementById('userMessage');
+              
+                if (btn) btn.innerText = "Criar usuário";
+                if (cancelBtn) cancelBtn.style.display = "none";
+                if (msgEl) msgEl.innerText = "Crie um novo usuário do sistema.";
+              }
+              
+              function setUserFormModeEdit(user) {
+                editingUserId = user.id;
+                const btn = document.getElementById('userFormSubmitBtn');
+                const cancelBtn = document.getElementById('userFormCancelEditBtn');
+                const msgEl = document.getElementById('userMessage');
+              
+                if (btn) btn.innerText = `Salvar alterações (ID ${user.id})`;
+                if (cancelBtn) cancelBtn.style.display = "inline-flex";
+                if (msgEl) msgEl.innerText = "Editando usuário existente. A senha não é alterada aqui, use 'Redefinir senha'.";
+              }
+              
+              function cancelEditUser() {
+                setUserFormModeCreate();
+                document.getElementById('uName').value = "";
+                document.getElementById('uEmail').value = "";
+                document.getElementById('uPassword').value = "";
+                document.getElementById('uRole').value = "USER";
+              }
 
           
           function updateUsersSelectedCount() {
@@ -1445,25 +1505,29 @@
             updateUsersSelectedCount();
           }
           
-          async function createUser() {
-            if (!token || !currentUser || currentUser.role !== 'ADMIN') {
-              showToast("Apenas ADMIN pode criar usuários.", "error");
-              return;
-            }
-          
-            const name = document.getElementById('uName').value.trim();
-            const email = document.getElementById('uEmail').value.trim();
-            const password = document.getElementById('uPassword').value.trim();
-            const role = document.getElementById('uRole').value;
-            const msgEl = document.getElementById('userMessage');
-          
-            if (!name || !email || !password) {
-              showToast("Preencha nome, email e senha.", "error");
-              if (msgEl) msgEl.innerText = "Preencha nome, email e senha.";
-              return;
-            }
-          
-            try {
+          async function submitUserForm() {
+          if (!token || !currentUser || currentUser.role !== 'ADMIN') {
+            showToast("Apenas ADMIN pode gerenciar usuários.", "error");
+            return;
+          }
+        
+          const name = document.getElementById('uName').value.trim();
+          const email = document.getElementById('uEmail').value.trim();
+          const password = document.getElementById('uPassword').value.trim();
+          const role = document.getElementById('uRole').value;
+          const msgEl = document.getElementById('userMessage');
+        
+          if (!name || !email || (!editingUserId && !password)) {
+            showToast(editingUserId ? "Preencha nome e email." : "Preencha nome, email e senha.", "error");
+            if (msgEl) msgEl.innerText = editingUserId
+              ? "Preencha nome e email."
+              : "Preencha nome, email e senha.";
+            return;
+          }
+        
+          try {
+            if (!editingUserId) {
+              // CRIAR
               const res = await fetch(API_BASE + "/users", {
                 method: "POST",
                 headers: {
@@ -1478,57 +1542,95 @@
                 if (msgEl) msgEl.innerText = data.message || "Erro ao criar usuário.";
                 return;
               }
-          
-              // limpar campos
+        
               document.getElementById('uName').value = "";
               document.getElementById('uEmail').value = "";
               document.getElementById('uPassword').value = "";
               document.getElementById('uRole').value = "USER";
               if (msgEl) msgEl.innerText = "Usuário criado com sucesso.";
-          
+        
               showToast("Usuário criado com sucesso!", "success");
               loadUsers();
-            } catch (err) {
-              console.error(err);
-              if (msgEl) msgEl.innerText = "Erro ao conectar ao servidor ao criar usuário.";
-              showToast("Erro ao conectar ao servidor ao criar usuário.", "error");
-            }
-          }
-          
-          async function deleteSelectedUsers() {
-            if (!token || !currentUser || currentUser.role !== 'ADMIN') {
-              showToast("Apenas ADMIN pode remover usuários.", "error");
-              return;
-            }
-          
-            const ids = Array.from(document.querySelectorAll('.userRowCheck'))
-              .filter((c) => c.checked)
-              .map((c) => Number(c.getAttribute('data-id')));
-          
-            if (ids.length === 0) {
-              showToast("Selecione ao menos um usuário.", "error");
-              return;
-            }
-          
-            const confirmar = window.confirm(
-              `Tem certeza que deseja remover ${ids.length} usuário(s)?`
-            );
-            if (!confirmar) return;
-          
-            try {
-              for (const id of ids) {
-                await fetch(API_BASE + "/users/" + id, {
-                  method: "DELETE",
-                  headers: { Authorization: "Bearer " + token }
-                });
+            } else {
+              // EDITAR
+              const res = await fetch(API_BASE + "/users/" + editingUserId, {
+                method: "PATCH",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: "Bearer " + token
+                },
+                body: JSON.stringify({ name, email, role })
+              });
+              const data = await res.json();
+              if (!res.ok) {
+                showToast(data.message || "Erro ao editar usuário.", "error");
+                if (msgEl) msgEl.innerText = data.message || "Erro ao editar usuário.";
+                return;
               }
-              showToast("Usuário(s) removido(s) com sucesso.", "success");
+        
+              showToast("Usuário atualizado com sucesso!", "success");
+              setUserFormModeCreate();
+              document.getElementById('uName').value = "";
+              document.getElementById('uEmail').value = "";
+              document.getElementById('uPassword').value = "";
+              document.getElementById('uRole').value = "USER";
+              if (msgEl) msgEl.innerText = "Usuário atualizado com sucesso.";
+        
               loadUsers();
-            } catch (err) {
-              console.error(err);
-              showToast("Erro ao remover usuários.", "error");
             }
+          } catch (err) {
+            console.error(err);
+            if (msgEl) msgEl.innerText = "Erro ao conectar ao servidor.";
+            showToast("Erro ao conectar ao servidor.", "error");
           }
+        }
+
+
+    //Reset Password
+
+    async function resetPasswordUser(id) {
+          if (!token || !currentUser || currentUser.role !== 'ADMIN') {
+            showToast("Apenas ADMIN pode redefinir senhas.", "error");
+            return;
+          }
+        
+          const user = users.find(u => u.id === id);
+          if (!user) {
+            showToast("Usuário não encontrado na lista carregada.", "error");
+            return;
+          }
+        
+          const novaSenha = window.prompt(`Digite a nova senha para o usuário ${user.name} (ID ${user.id}):`);
+          if (!novaSenha) {
+            return; // cancelado ou vazio
+          }
+          if (novaSenha.length < 4) {
+            showToast("Defina uma senha com pelo menos 4 caracteres.", "error");
+            return;
+          }
+        
+          try {
+            const res = await fetch(API_BASE + `/users/${id}/reset-password`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: "Bearer " + token
+              },
+              body: JSON.stringify({ newPassword: novaSenha })
+            });
+            const data = await res.json();
+            if (!res.ok) {
+              showToast(data.message || "Erro ao redefinir senha.", "error");
+              return;
+            }
+        
+            showToast("Senha redefinida com sucesso!", "success");
+          } catch (err) {
+            console.error("Erro ao redefinir senha:", err);
+            showToast("Erro ao conectar ao servidor ao redefinir senha.", "error");
+          }
+        }
+
 
 
     
