@@ -58,7 +58,7 @@ router.post('/', authMiddleware, ensureAdmin, async (req, res) => {
         email,
         // ❗ ATENÇÃO: troque "password" por "passwordHash"
         // se no seu schema.prisma o campo for passwordHash
-        password: hashed,
+        passwordHash: hashed,
         role: role === 'ADMIN' ? 'ADMIN' : 'USER'
       },
       select: {
