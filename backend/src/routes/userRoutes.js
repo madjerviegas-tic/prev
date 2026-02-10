@@ -4,11 +4,9 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 const bcrypt = require('bcryptjs');
 const { authMiddleware } = require('../authMiddleware');
-// se seu authMiddleware exportar também isAdmin, pode usar:
-// const { authMiddleware, isAdmin } = require('../authMiddleware');
 
 // Middleware simples para garantir ADMIN
-async function ensureAdmin(req, res, next) {
+function ensureAdmin(req, res, next) {
   if (!req.user || req.user.role !== 'ADMIN') {
     return res.status(403).json({ message: 'Acesso permitido somente para ADMIN.' });
   }
@@ -62,9 +60,9 @@ router.post('/', authMiddleware, ensureAdmin, async (req, res) => {
       data: {
         name,
         email,
-        // ⚠️ Campo conforme schema.prisma
-        passwordHash: hashed, // se no schema for "passwordHash String"
-        // se for "password String", troque por: password: hashed,
+        // ⚠️ Campo conforme schema.prisma:
+        // se no schema for `passwordHash String`, use passwordHash
+        passwordHash: hashed,
         role: role === 'ADMIN' ? 'ADMIN' : 'USER'
       },
       select: {
@@ -83,11 +81,11 @@ router.post('/', authMiddleware, ensureAdmin, async (req, res) => {
   }
 });
 
-// PATCH /api/users/:id -> editar nome/role (somente ADMIN)
+// PATCH /api/users/:id -> editar nome/email/role (somente ADMIN)
 router.patch('/:id', authMiddleware, ensureAdmin, async (req, res) => {
   try {
     const id = Number(req.params.id);
-    const { name, role } = req.body;
+    const { name, email, role } = req.body;
 
     if (isNaN(id)) {
       return res.status(400).json({ message: 'ID inválido.' });
@@ -98,7 +96,8 @@ router.patch('/:id', authMiddleware, ensureAdmin, async (req, res) => {
       return res.status(404).json({ message: 'Usuário não encontrado.' });
     }
 
-    // Impede que um admin tire o próprio ADMIN (se for o último)
+    // Se for ADMIN e estamos tentando mudar o role para USER,
+    // precisamos garantir que não é o último ADMIN.
     if (user.role === 'ADMIN' && role === 'USER') {
       const totalAdmins = await countAdmins();
       if (totalAdmins <= 1) {
@@ -108,11 +107,20 @@ router.patch('/:id', authMiddleware, ensureAdmin, async (req, res) => {
       }
     }
 
+    // Se o email mudou, checa duplicidade
+    if (email && email !== user.email) {
+      const existing = await prisma.user.findUnique({ where: { email } });
+      if (existing && existing.id !== user.id) {
+        return res.status(400).json({ message: 'Já existe um usuário com este email.' });
+      }
+    }
+
     const updated = await prisma.user.update({
       where: { id },
       data: {
-        name: name || user.name,
-        role: role || user.role
+        name: name ?? user.name,
+        email: email ?? user.email,
+        role: role ?? user.role
       },
       select: {
         id: true,
@@ -153,7 +161,7 @@ router.post('/:id/reset-password', authMiddleware, ensureAdmin, async (req, res)
     await prisma.user.update({
       where: { id },
       data: {
-        passwordHash: hashed // ou password: hashed, conforme schema
+        passwordHash: hashed // ou password: hashed, se seu schema usar "password"
       }
     });
 
