@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <title>Sistema de Preventiva de Computadores</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <style>
     :root {
@@ -683,58 +684,83 @@
     <main class="content">
       <!-- DASHBOARD -->
       <section id="page-dashboard" class="page-section active">
-        <div class="page-header">
-          <div>
-            <div class="page-title">Visão geral</div>
-            <div class="page-subtitle">Resumo rápido do ambiente de computadores</div>
-          </div>
-          <span class="chip chip-pill">Dashboard</span>
-        </div>
-
-        <div class="stats-row" id="dashboardTopStats">
-          <div class="stat-card">
-            <div class="stat-label">Total de computadores</div>
-            <div class="stat-value" id="dashTotalComputers">–</div>
-            <div class="stat-note">Quantidade total cadastrada no sistema</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-label">Preventivas vencidas</div>
-            <div class="stat-value" id="dashOverdue">–</div>
-            <div class="stat-note">Computadores com preventiva já vencida</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-label">Preventivas a vencer (até hoje)</div>
-            <div class="stat-value" id="dashDueSoon">–</div>
-            <div class="stat-note">Próx. preventiva até a data de hoje</div>
-          </div>
-        </div>
-
-        <div class="flex">
-          <div class="card" style="flex: 1; min-width:240px;">
-            <div class="card-header">
-              <div>
-                <div class="card-title">Distribuição por localização</div>
-                <div class="card-subtitle">Top 3 locais com mais computadores</div>
+          <div class="page-header">
+            <div>
+              <div class="page-title">Visão geral</div>
+              <div class="page-subtitle">
+                Acompanhe rapidamente o estado das preventivas e do parque de máquinas.
               </div>
             </div>
-            <div id="dashByLocation">
-              <div style="font-size:12px; color:var(--text-soft);">Carregando...</div>
+          </div>
+        
+          <!-- CARDS PRINCIPAIS -->
+          <div class="card-grid">
+            <div class="stat-card">
+              <div class="stat-label">Total de computadores</div>
+              <div class="stat-value" id="dashTotalComputers">-</div>
+              <div class="stat-sub">Todos os equipamentos cadastrados</div>
+            </div>
+        
+            <div class="stat-card">
+              <div class="stat-label">Preventivas atrasadas</div>
+              <div class="stat-value text-danger" id="dashOverdue">-</div>
+              <div class="stat-sub">Máquinas com data de preventiva vencida</div>
+            </div>
+        
+            <div class="stat-card">
+              <div class="stat-label">Preventivas nos próximos 30 dias</div>
+              <div class="stat-value text-warning" id="dashNext30">-</div>
+              <div class="stat-sub">Máquinas com preventiva marcada para os próximos 30 dias</div>
+            </div>
+        
+            <div class="stat-card">
+              <div class="stat-label">Sem próxima preventiva</div>
+              <div class="stat-value text-soft" id="dashNoNext">-</div>
+              <div class="stat-sub">Equipamentos sem data definida de próxima preventiva</div>
             </div>
           </div>
-
-          <div class="card" style="flex: 1; min-width:240px;">
-            <div class="card-header">
-              <div>
-                <div class="card-title">Distribuição por sistema operacional</div>
-                <div class="card-subtitle">Top 3 sistemas mais usados</div>
+        
+          <!-- GRAFICOS -->
+          <div class="flex" style="margin-top:16px;">
+            <div class="col">
+              <div class="card">
+                <div class="card-header">
+                  <div class="card-title">Distribuição por sistema operacional</div>
+                  <div class="card-subtitle">Ajuda a enxergar o padrão do parque de TI</div>
+                </div>
+                <div class="card-body">
+                  <canvas id="chartOs" height="180"></canvas>
+                </div>
               </div>
             </div>
-            <div id="dashByOs">
-              <div style="font-size:12px; color:var(--text-soft);">Carregando...</div>
+        
+            <div class="col">
+              <div class="card">
+                <div class="card-header">
+                  <div class="card-title">Distribuição por localização</div>
+                  <div class="card-subtitle">Mostra onde estão concentradas as máquinas</div>
+                </div>
+                <div class="card-body">
+                  <canvas id="chartLocation" height="180"></canvas>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      </section>
+        
+          <!-- LISTA RÁPIDA DE ALERTAS -->
+          <div class="card" style="margin-top:16px;">
+            <div class="card-header">
+              <div class="card-title">Alertas rápidos</div>
+              <div class="card-subtitle">Principais pontos de atenção para agir primeiro</div>
+            </div>
+            <div class="card-body">
+              <ul id="dashAlerts" style="font-size:12px; color:var(--text-soft); padding-left:18px; margin:0;">
+                <!-- preenchido via JS -->
+              </ul>
+            </div>
+          </div>
+        </section>
+
 
       <!-- COMPUTADORES -->
       <section id="page-computers" class="page-section">
@@ -1134,6 +1160,9 @@
       let editingUserId = null; // 👈 novo
       let lastReportJson = null;
       let lastReportType = null;
+      let chartOs = null;
+      let chartLocation = null;
+
 
     // ====== UTIL ======
     function showToast(message, type = "success") {
@@ -1145,20 +1174,20 @@
     }
 
     function changePage(btn, pageId) {
-  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-
-  document.querySelectorAll('.page-section').forEach(sec => sec.classList.remove('active'));
-  document.getElementById(pageId).classList.add('active');
-
-  if (pageId === 'page-dashboard') {
-    loadDashboardStats();
-  } else if (pageId === 'page-computers') {
-    loadComputers();
-  } else if (pageId === 'page-users') {
-    loadUsers(); // 👈 aqui garante o carregamento da lista
-  }
-}
+      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    
+      document.querySelectorAll('.page-section').forEach(sec => sec.classList.remove('active'));
+      document.getElementById(pageId).classList.add('active');
+    
+      if (pageId === 'page-dashboard') {
+        loadDashboardStats();
+      } else if (pageId === 'page-computers') {
+        loadComputers();
+      } else if (pageId === 'page-users') {
+        loadUsers(); // 👈 aqui garante o carregamento da lista
+      }
+    }
 
     function updateSelectedCount() {
       const count = Array.from(document.querySelectorAll('.rowCheck'))
@@ -1257,25 +1286,177 @@
 
     // ====== DASHBOARD ======
     async function loadDashboardStats() {
-      if (!token) return;
-
-      const today = todayIsoDate();
-
-      // Total de computadores
-      try {
-        const resComputers = await fetch(API_BASE + "/computers?page=1&pageSize=1", {
-          headers: { Authorization: "Bearer " + token }
-        });
-        const dataComputers = await resComputers.json();
-        if (resComputers.ok) {
-          document.getElementById('dashTotalComputers').innerText = dataComputers.total ?? '0';
-        } else {
-          document.getElementById('dashTotalComputers').innerText = '–';
+        if (!token) return;
+      
+        try {
+          const res = await fetch(API_BASE + "/computers", {
+            headers: { Authorization: "Bearer " + token }
+          });
+          const data = await res.json();
+      
+          if (!res.ok) {
+            console.error("Erro ao carregar computadores para dashboard:", data);
+            showToast(data.message || "Erro ao carregar dados do dashboard.", "error");
+            return;
+          }
+      
+          // Atualiza lista global de computadores
+          computers = data;
+          renderDashboardFromComputers(computers);
+        } catch (err) {
+          console.error("Erro de rede ao carregar dashboard:", err);
+          showToast("Erro ao conectar ao servidor ao carregar dashboard.", "error");
         }
-      } catch (err) {
-        console.error(err);
-        document.getElementById('dashTotalComputers').innerText = '–';
       }
+
+    function renderDashboardFromComputers(list) {
+        const total = list.length;
+      
+        const now = new Date();
+        const nowTime = now.getTime();
+        const in30 = new Date();
+        in30.setDate(in30.getDate() + 30);
+        const in30Time = in30.getTime();
+      
+        let overdue = 0;
+        let next30 = 0;
+        let noNext = 0;
+      
+        const osCounts = {};
+        const locationCounts = {};
+      
+        list.forEach(c => {
+          // campos esperados do backend:
+          // c.nextPreventiveDate, c.lastPreventiveDate, c.operatingSystem, c.location
+          const nextDateStr = c.nextPreventiveDate || c.dataProximaPreventiva || c.next_preventive_date;
+          const os = (c.operatingSystem || c.sistemaOperacional || "Não informado").trim() || "Não informado";
+          const loc = (c.location || c.localizacao || "Não informado").trim() || "Não informado";
+      
+          // contagem por OS / localização
+          osCounts[os] = (osCounts[os] || 0) + 1;
+          locationCounts[loc] = (locationCounts[loc] || 0) + 1;
+      
+          if (!nextDateStr) {
+            noNext++;
+            return;
+          }
+      
+          const d = new Date(nextDateStr);
+          if (isNaN(d.getTime())) {
+            noNext++;
+            return;
+          }
+      
+          const time = d.getTime();
+          if (time < nowTime) {
+            overdue++;
+          } else if (time >= nowTime && time <= in30Time) {
+            next30++;
+          }
+        });
+      
+        // Atualiza cards
+        const elTotal = document.getElementById('dashTotalComputers');
+        const elOverdue = document.getElementById('dashOverdue');
+        const elNext30 = document.getElementById('dashNext30');
+        const elNoNext = document.getElementById('dashNoNext');
+      
+        if (elTotal) elTotal.innerText = total;
+        if (elOverdue) elOverdue.innerText = overdue;
+        if (elNext30) elNext30.innerText = next30;
+        if (elNoNext) elNoNext.innerText = noNext;
+      
+        // Atualiza alertas
+        const alertsEl = document.getElementById('dashAlerts');
+        if (alertsEl) {
+          const alerts = [];
+      
+          if (overdue > 0) {
+            alerts.push(`⚠ Existem ${overdue} máquina(s) com preventiva atrasada. Priorize essas.`);
+          }
+          if (next30 > 0) {
+            alerts.push(`📅 ${next30} máquina(s) possuem preventiva marcada para os próximos 30 dias.`);
+          }
+          if (noNext > 0) {
+            alerts.push(`🔄 ${noNext} máquina(s) estão sem próxima preventiva definida.`);
+          }
+          if (total === 0) {
+            alerts.push(`Não há computadores cadastrados ainda. Importe um CSV ou cadastre manualmente.`);
+          }
+      
+          alertsEl.innerHTML = "";
+          if (alerts.length === 0) {
+            alertsEl.innerHTML = `<li>Sem alertas no momento. Tudo em dia ✅</li>`;
+          } else {
+            alerts.forEach(a => {
+              const li = document.createElement('li');
+              li.innerText = a;
+              alertsEl.appendChild(li);
+            });
+          }
+        }
+
+  // Gráfico por OS
+  const osLabels = Object.keys(osCounts);
+  const osData = Object.values(osCounts);
+
+  const osCanvas = document.getElementById('chartOs');
+  if (osCanvas) {
+    if (chartOs) chartOs.destroy();
+    chartOs = new Chart(osCanvas.getContext('2d'), {
+      type: 'doughnut',
+      data: {
+        labels: osLabels,
+        datasets: [{
+          data: osData,
+          backgroundColor: [
+            '#0ea5e9','#22c55e','#f97316','#a855f7',
+            '#eab308','#ef4444','#14b8a6','#6366f1'
+          ]
+        }]
+      },
+      options: {
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: { boxWidth: 12, font: { size: 11 } }
+          }
+        }
+      }
+    });
+  }
+
+  // Gráfico por localização
+  const locLabels = Object.keys(locationCounts);
+  const locData = Object.values(locationCounts);
+
+  const locCanvas = document.getElementById('chartLocation');
+  if (locCanvas) {
+    if (chartLocation) chartLocation.destroy();
+    chartLocation = new Chart(locCanvas.getContext('2d'), {
+      type: 'bar',
+      data: {
+        labels: locLabels,
+        datasets: [{
+          label: 'Computadores',
+          data: locData,
+          backgroundColor: '#0ea5e9'
+        }]
+      },
+      options: {
+        scales: {
+          x: { ticks: { font: { size: 10 } } },
+          y: { beginAtZero: true, ticks: { stepSize: 1 } }
+        },
+        plugins: {
+          legend: { display: false }
+        }
+      }
+    });
+  }
+}
+
+
 
       // Preventivas pendentes
       try {
