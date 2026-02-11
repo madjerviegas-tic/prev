@@ -1265,25 +1265,112 @@
 
     // ====== DASHBOARD ======
     async function loadDashboardStats() {
-      if (!token) return;
+            if (!token) return;
+          
+            const today = todayIsoDate();
+          
+            // 1) Total de computadores (mantém sua lógica atual usando paginação)
+            try {
+              const resComputers = await fetch(API_BASE + "/computers?page=1&pageSize=1", {
+                headers: { Authorization: "Bearer " + token }
+              });
+              const dataComputers = await resComputers.json();
+              if (resComputers.ok) {
+                document.getElementById('dashTotalComputers').innerText = dataComputers.total ?? '0';
+              } else {
+                document.getElementById('dashTotalComputers').innerText = '–';
+              }
+            } catch (err) {
+              console.error("Erro ao carregar total de computadores:", err);
+              const el = document.getElementById('dashTotalComputers');
+              if (el) el.innerText = '–';
+            }
+          
+            // 2) Carregar uma lista maior de computadores para calcular os indicadores
+            try {
+              // aqui eu assumo que o endpoint de lista é o mesmo, só mudando pageSize
+              const resList = await fetch(API_BASE + "/computers?page=1&pageSize=1000", {
+                headers: { Authorization: "Bearer " + token }
+              });
+              const dataList = await resList.json();
+          
+              if (!resList.ok) {
+                console.error("Erro ao carregar lista de computadores para dashboard:", dataList);
+                setDashboardStatsFallback();
+                return;
+              }
+          
+              // tenta descobrir onde está o array de computadores:
+              // pode ser dataList.items, dataList.computers ou o próprio dataList
+              let list = [];
+              if (Array.isArray(dataList.items)) list = dataList.items;
+              else if (Array.isArray(dataList.computers)) list = dataList.computers;
+              else if (Array.isArray(dataList)) list = dataList;
+          
+              updateDashboardFromComputers(list);
+            } catch (err) {
+              console.error("Erro de rede ao carregar lista de computadores para dashboard:", err);
+              setDashboardStatsFallback();
+            }
+          }
+          
+          // se der erro, coloca apenas traços nos cards secundários
+          function setDashboardStatsFallback() {
+            const elOverdue = document.getElementById('dashOverdue');
+            const elNext30 = document.getElementById('dashNext30');
+            const elNoNext = document.getElementById('dashNoNext');
+          
+            if (elOverdue) elOverdue.innerText = '–';
+            if (elNext30) elNext30.innerText = '–';
+            if (elNoNext) elNoNext.innerText = '–';
+          }
+          
+          // calcula atrasadas / próximas30 / sem data
+          function updateDashboardFromComputers(list) {
+            const now = new Date();
+            const nowTime = now.getTime();
+            const in30 = new Date();
+            in30.setDate(in30.getDate() + 30);
+            const in30Time = in30.getTime();
+          
+            let overdue = 0;
+            let next30 = 0;
+            let noNext = 0;
+          
+            if (!Array.isArray(list)) list = [];
+          
+            list.forEach(pc => {
+              // aqui uso o nome camelCase que normalmente sai do backend que montamos:
+              const next = pc.nextPreventiveDate;
+          
+              if (!next) {
+                noNext++;
+                return;
+              }
+          
+              const dt = new Date(next);
+              if (isNaN(dt.getTime())) {
+                noNext++;
+                return;
+              }
+          
+              const t = dt.getTime();
+              if (t < nowTime) {
+                overdue++;
+              } else if (t >= nowTime && t <= in30Time) {
+                next30++;
+              }
+            });
+          
+            const elOverdue = document.getElementById('dashOverdue');
+            const elNext30 = document.getElementById('dashNext30');
+            const elNoNext = document.getElementById('dashNoNext');
+          
+            if (elOverdue) elOverdue.innerText = overdue;
+            if (elNext30) elNext30.innerText = next30;
+            if (elNoNext) elNoNext.innerText = noNext;
+          }
 
-      const today = todayIsoDate();
-
-      // Total de computadores
-      try {
-        const resComputers = await fetch(API_BASE + "/computers?page=1&pageSize=1", {
-          headers: { Authorization: "Bearer " + token }
-        });
-        const dataComputers = await resComputers.json();
-        if (resComputers.ok) {
-          document.getElementById('dashTotalComputers').innerText = dataComputers.total ?? '0';
-        } else {
-          document.getElementById('dashTotalComputers').innerText = '–';
-        }
-      } catch (err) {
-        console.error(err);
-        document.getElementById('dashTotalComputers').innerText = '–';
-      }
 
       // Preventivas pendentes
       try {
@@ -1457,6 +1544,43 @@
               fillUserForm(user);
               setUserFormModeEdit(user);
             }
+
+    function updateDashboardCards(computers) {
+      const now = new Date();
+      const nowTime = now.getTime();
+      const in30 = new Date();
+      in30.setDate(in30.getDate() + 30);
+      const in30Time = in30.getTime();
+    
+      let overdue = 0;
+      let next30 = 0;
+      let noNext = 0;
+    
+      computers.forEach(pc => {
+        const next = pc.nextPreventiveDate;
+    
+        if (!next) {
+          noNext++;
+          return;
+        }
+    
+        const dt = new Date(next);
+        if (isNaN(dt.getTime())) {
+          noNext++;
+          return;
+        }
+    
+        const t = dt.getTime();
+    
+        if (t < nowTime) overdue++;
+        else if (t <= in30Time) next30++;
+      });
+    
+      document.getElementById('dashTotalComputers').innerText = computers.length;
+      document.getElementById('dashOverdue').innerText = overdue;
+      document.getElementById('dashNext30').innerText = next30;
+      document.getElementById('dashNoNext').innerText = noNext;
+    }
 
     
           //Perto do bloco do usuario
