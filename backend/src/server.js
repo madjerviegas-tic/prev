@@ -26,6 +26,7 @@ app.use('/api/computers', computerRoutes);
 app.use('/api/import', importRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/calendar', calendarRoutes); // 👈 NOVO
 
 // Rota raiz
 app.get('/', (req, res) => {
