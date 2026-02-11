@@ -670,7 +670,12 @@
         <button id="navUsersBtn" class="nav-btn" data-page="page-users" onclick="changePage(this, 'page-users')" style="display:none;">
           <span class="icon">👤</span>
           <span>Usuários</span>
-</button>
+        </button>
+        <button class="nav-btn" data-page="page-calendar" onclick="changePage(this, 'page-calendar')">
+          <span class="icon">📅</span>
+          <span>Calendário</span>
+        </button>
+
 
       </div>
 
@@ -1126,6 +1131,43 @@
         </div>
       </section>
 
+      <!-- CALENDÁRIO DE PREVENTIVAS -->
+        <section id="page-calendar" class="page-section">
+          <div class="page-header">
+            <div>
+              <div class="page-title">Calendário anual de preventivas</div>
+              <div class="page-subtitle">
+                Visualize as preventivas programadas ao longo do ano.
+              </div>
+            </div>
+          </div>
+        
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">Filtro de ano</div>
+                <div class="card-subtitle">
+                  Escolha o ano para visualizar as preventivas agendadas.
+                </div>
+              </div>
+              <div style="display:flex; gap:8px; align-items:center;">
+                <input id="calYear" type="number" class="input" style="width:110px;" />
+                <button class="btn-sm btn-sm-primary" onclick="loadPreventiveCalendar()">Atualizar</button>
+              </div>
+            </div>
+            <div class="card-body">
+              <div id="calendarSummary" style="font-size:12px; color:var(--text-soft);">
+                <!-- preenchido via JS -->
+              </div>
+            </div>
+          </div>
+        
+          <div id="calendarMonths" class="calendar-months-grid" style="margin-top:16px; display:grid; gap:12px; grid-template-columns:repeat(auto-fit,minmax(260px,1fr));">
+            <!-- cartões de meses preenchidos via JS -->
+          </div>
+        </section>
+
+
     </main>
   </div>
 
@@ -1142,6 +1184,7 @@
       let editingUserId = null; // 👈 novo
       let lastReportJson = null;
       let lastReportType = null;
+      let calendarData = null; // 👈 NOVO
 
     // ====== UTIL ======
     function showToast(message, type = "success") {
@@ -1153,20 +1196,23 @@
     }
 
     function changePage(btn, pageId) {
-  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
+      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    
+      document.querySelectorAll('.page-section').forEach(sec => sec.classList.remove('active'));
+      document.getElementById(pageId).classList.add('active');
+    
+      if (pageId === 'page-dashboard') {
+        loadDashboardStats();
+      } else if (pageId === 'page-computers') {
+        loadComputers();
+      } else if (pageId === 'page-users') {
+        loadUsers();
+      } else if (pageId === 'page-calendar') {
+        loadPreventiveCalendar(); // 👈 NOVO
+      }
+    }
 
-  document.querySelectorAll('.page-section').forEach(sec => sec.classList.remove('active'));
-  document.getElementById(pageId).classList.add('active');
-
-  if (pageId === 'page-dashboard') {
-    loadDashboardStats();
-  } else if (pageId === 'page-computers') {
-    loadComputers();
-  } else if (pageId === 'page-users') {
-    loadUsers(); // 👈 aqui garante o carregamento da lista
-  }
-}
 
     function updateSelectedCount() {
       const count = Array.from(document.querySelectorAll('.rowCheck'))
@@ -1457,6 +1503,127 @@
           '<div style="font-size:12px; color:var(--text-soft);">Erro ao carregar distribuição.</div>';
       }
     }
+
+    // ====== CALENDÁRIO ANUAL DE PREVENTIVAS ======
+
+          async function loadPreventiveCalendar() {
+            if (!token) {
+              showToast("Faça login para visualizar o calendário.", "error");
+              return;
+            }
+          
+            const yearInput = document.getElementById('calYear');
+            let year = parseInt(yearInput.value, 10);
+          
+            if (isNaN(year)) {
+              const now = new Date();
+              year = now.getFullYear();
+              yearInput.value = year;
+            }
+          
+            try {
+              const res = await fetch(API_BASE + `/calendar/preventives?year=${year}`, {
+                headers: { Authorization: "Bearer " + token }
+              });
+              const data = await res.json();
+          
+              if (!res.ok) {
+                console.error("Erro ao carregar calendário:", data);
+                showToast(data.message || "Erro ao carregar calendário de preventivas.", "error");
+                return;
+              }
+          
+              calendarData = data;
+              renderPreventiveCalendar();
+            } catch (err) {
+              console.error("Erro de rede ao carregar calendário:", err);
+              showToast("Erro ao conectar ao servidor ao carregar calendário.", "error");
+            }
+          }
+          
+          function renderPreventiveCalendar() {
+            if (!calendarData) return;
+          
+            const { year, totalEvents, totalDays, days } = calendarData;
+            const summaryEl = document.getElementById('calendarSummary');
+            const monthsEl = document.getElementById('calendarMonths');
+          
+            if (summaryEl) {
+              summaryEl.innerHTML = `
+                <div style="display:flex; flex-wrap:wrap; gap:8px;">
+                  <span class="chip">Ano: <strong>${year}</strong></span>
+                  <span class="chip">Total de preventivas: <strong>${totalEvents}</strong></span>
+                  <span class="chip">Dias com agendamento: <strong>${totalDays}</strong></span>
+                </div>
+              `;
+            }
+          
+            const byMonth = {};
+            days.forEach(d => {
+              const dateObj = new Date(d.date + 'T00:00:00');
+              const m = dateObj.getMonth(); // 0..11
+              if (!byMonth[m]) byMonth[m] = [];
+              byMonth[m].push(d);
+            });
+          
+            const monthNames = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+          
+            if (monthsEl) {
+              monthsEl.innerHTML = '';
+          
+              for (let m = 0; m < 12; m++) {
+                const monthDays = byMonth[m] || [];
+                const card = document.createElement('div');
+                card.className = 'card';
+          
+                let itemsHtml = '';
+                if (monthDays.length === 0) {
+                  itemsHtml = `
+                    <div style="font-size:12px; color:var(--text-soft); padding:8px;">
+                      Nenhuma preventiva agendada neste mês.
+                    </div>
+                  `;
+                } else {
+                  itemsHtml = monthDays.map(d => {
+                    const dateObj = new Date(d.date + 'T00:00:00');
+                    const dia = String(dateObj.getDate()).padStart(2, '0');
+                    const mes = String(dateObj.getMonth() + 1).padStart(2, '0');
+          
+                    const listaMaquinas = d.computers
+                      .map(c => {
+                        const infoLoc = c.location ? ` - ${c.location}` : '';
+                        return `<li>${c.name || 'Sem nome'}${infoLoc}</li>`;
+                      })
+                      .join('');
+          
+                    return `
+                      <div style="margin-bottom:8px;">
+                        <div style="font-weight:600; font-size:12px;">${dia}/${mes} - ${d.count} máquina(s)</div>
+                        <ul style="margin:2px 0 0 16px; font-size:11px; color:var(--text-soft);">
+                          ${listaMaquinas}
+                        </ul>
+                      </div>
+                    `;
+                  }).join('');
+                }
+          
+                card.innerHTML = `
+                  <div class="card-header">
+                    <div>
+                      <div class="card-title">${monthNames[m]} / ${year}</div>
+                      <div class="card-subtitle">${monthDays.length} dia(s) com preventivas</div>
+                    </div>
+                  </div>
+                  <div class="card-body">
+                    ${itemsHtml}
+                  </div>
+                `;
+          
+                monthsEl.appendChild(card);
+              }
+            }
+          }
+
 
       // ====== USUÁRIOS (ADMIN) ======
 
