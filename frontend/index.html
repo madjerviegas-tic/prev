@@ -36,7 +36,7 @@
       flex-direction: column;
     }
 
-    /* HEADER */
+    /* HEADER -------------------------------------------------- */
 
     header {
       background: linear-gradient(to right, #020617, #0b1120);
@@ -142,7 +142,7 @@
       background: rgba(15, 23, 42, 0.9);
     }
 
-    /* LAYOUT */
+    /* LAYOUT -------------------------------------------------- */
 
     .layout {
       display: flex;
@@ -214,7 +214,7 @@
       overflow-y: auto;
     }
 
-    /* LOGIN */
+    /* LOGIN --------------------------------------------------- */
 
     .center-wrapper {
       display: flex;
@@ -291,7 +291,7 @@
       min-height: 14px;
     }
 
-    /* TÍTULOS / SEÇÕES */
+    /* TÍTULOS / SEÇÕES ---------------------------------------- */
 
     .page-header {
       display: flex;
@@ -326,7 +326,7 @@
       border-color: rgba(56,189,248,0.4);
     }
 
-    /* CARDS & GRID */
+    /* CARDS & GRID -------------------------------------------- */
 
     .stats-row, .flex {
       display: flex;
@@ -392,7 +392,7 @@
       min-width: 160px;
     }
 
-    /* TABLE */
+    /* TABLE --------------------------------------------------- */
 
     table {
       width: 100%;
@@ -459,12 +459,12 @@
       border: 1px solid #111827;
     }
 
-    /* PAGINAS */
+    /* PÁGINAS ------------------------------------------------- */
 
     .page-section { display: none; }
     .page-section.active { display: block; }
 
-    /* TOAST */
+    /* TOAST --------------------------------------------------- */
 
     .toast {
       position: fixed;
@@ -490,7 +490,7 @@
 
     .toast.show { display: block; }
 
-    /* ====== ESTILOS ESPECÍFICOS DE RELATÓRIOS / GRÁFICOS ====== */
+    /* RELATÓRIOS / GRÁFICOS ----------------------------------- */
 
     .report-grid {
       display: flex;
@@ -583,6 +583,57 @@
       color: var(--accent);
     }
 
+    /* CALENDÁRIO ---------------------------------------------- */
+
+    .calendar-month-card {
+      background: rgba(15,23,42,0.95);
+      border-radius: var(--radius);
+      border: 1px solid #1f2937;
+      padding: 10px;
+    }
+
+    .calendar-month-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 8px;
+    }
+
+    .calendar-month-title {
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .calendar-month-badges {
+      display: flex;
+      gap: 6px;
+      font-size: 10px;
+    }
+
+    .calendar-day-row {
+      font-size: 11px;
+      display: flex;
+      justify-content: space-between;
+      padding: 3px 4px;
+      border-radius: 6px;
+    }
+
+    .calendar-day-row:nth-child(odd) {
+      background: rgba(15,23,42,0.5);
+    }
+
+    .calendar-day-row strong {
+      font-weight: 600;
+    }
+
+    .calendar-day-right {
+      font-size: 10px;
+      color: var(--text-soft);
+      text-align: right;
+      margin-left: 8px;
+      flex: 1;
+    }
+
     @media (max-width: 800px) {
       .layout { flex-direction: column; }
       .sidebar {
@@ -621,8 +672,7 @@
     </div>
   </header>
 
-  <!-- LOGIN -->
-
+  <!-- LOGIN ---------------------------------------------------- -->
   <div id="loginSection" class="center-wrapper">
     <div class="login-card">
       <div class="login-title">Entrar no sistema</div>
@@ -645,8 +695,7 @@
     </div>
   </div>
 
-  <!-- APP -->
-
+  <!-- APP ------------------------------------------------------- -->
   <div id="appSection" class="layout" style="display:none;">
     <aside class="sidebar">
       <div>
@@ -675,8 +724,6 @@
           <span class="icon">📅</span>
           <span>Calendário</span>
         </button>
-
-
       </div>
 
       <div class="sidebar-footer">
@@ -686,7 +733,7 @@
     </aside>
 
     <main class="content">
-      <!-- DASHBOARD -->
+      <!-- DASHBOARD -------------------------------------------- -->
       <section id="page-dashboard" class="page-section active">
         <div class="page-header">
           <div>
@@ -713,7 +760,7 @@
             <div class="stat-note">Próx. preventiva até a data de hoje</div>
           </div>
           <div class="stat-card">
-            <div class="stat-label">Próximas 30 dias</div>
+            <div class="stat-label">Próximos 30 dias</div>
             <div class="stat-value" id="dashNext30">-</div>
           </div>
           <div class="stat-card">
@@ -749,7 +796,7 @@
         </div>
       </section>
 
-      <!-- COMPUTADORES -->
+      <!-- COMPUTADORES ----------------------------------------- -->
       <section id="page-computers" class="page-section">
         <div class="page-header">
           <div>
@@ -931,7 +978,7 @@
         </div>
       </section>
 
-      <!-- IMPORTAÇÃO CSV -->
+      <!-- IMPORTAÇÃO CSV --------------------------------------- -->
       <section id="page-import" class="page-section">
         <div class="page-header">
           <div>
@@ -964,7 +1011,7 @@
         </div>
       </section>
 
-      <!-- RELATÓRIOS -->
+      <!-- RELATÓRIOS ------------------------------------------- -->
       <section id="page-reports" class="page-section">
         <div class="page-header">
           <div>
@@ -1007,32 +1054,25 @@
           </div>
 
           <div style="margin-top:10px; display:flex; gap:8px; justify-content:space-between; align-items:center;">
-  <div style="display:flex; gap:8px;">
-    <button class="btn-sm btn-sm-primary" onclick="runReport()">
-      Gerar relatório
-    </button>
-    <button class="btn-sm" onclick="exportReportPdf()">
-      Exportar PDF
-    </button>
-  </div>
+            <div style="display:flex; gap:8px;">
+              <button class="btn-sm btn-sm-primary" onclick="runReport()">
+                Gerar relatório
+              </button>
+              <button class="btn-sm" onclick="exportReportPdf()">
+                Exportar PDF
+              </button>
+            </div>
 
-  <span class="json-toggle" onclick="toggleJson()">
-    Mostrar / ocultar JSON bruto
-  </span>
-</div>
+            <span class="json-toggle" onclick="toggleJson()">
+              Mostrar / ocultar JSON bruto
+            </span>
+          </div>
 
-<div style="margin-top:10px;">
-  <span style="font-size:11px; color:var(--text-soft);">
-    Resultado visual do relatório:
-  </span>
-</div>
-
-<div id="reportVisual" style="margin-top:8px;">
-  <div style="font-size:12px; color:var(--text-soft);">
-    Escolha um tipo de relatório e clique em "Gerar relatório".
-  </div>
-</div>
-
+          <div style="margin-top:10px;">
+            <span style="font-size:11px; color:var(--text-soft);">
+              Resultado visual do relatório:
+            </span>
+          </div>
 
           <div id="reportVisual" style="margin-top:8px;">
             <div style="font-size:12px; color:var(--text-soft);">
@@ -1046,15 +1086,17 @@
           </div>
         </div>
       </section>
-    <section id="page-users" class="page-section">
+
+      <!-- USUÁRIOS --------------------------------------------- -->
+      <section id="page-users" class="page-section">
         <div class="page-header">
           <div>
             <div class="page-title">Gestão de usuários</div>
-            <div class="page-subtitle">Cadastrar, listar e remover usuários do sistema</div>
+            <div class="page-subtitle">Cadastrar, listar, editar e remover usuários do sistema</div>
           </div>
           <div class="chip chip-pill">Somente ADMIN</div>
         </div>
-      
+
         <div class="card">
           <div class="card-header">
             <div>
@@ -1068,7 +1110,7 @@
               <button class="btn-sm btn-sm-danger" onclick="deleteSelectedUsers()">Remover selecionados</button>
             </div>
           </div>
-      
+
           <div class="report-table-wrapper">
             <table>
               <thead>
@@ -1088,17 +1130,17 @@
             </table>
           </div>
         </div>
-      
+
         <div class="card">
           <div class="card-header">
             <div>
-              <div class="card-title">Novo usuário</div>
+              <div class="card-title">Novo usuário / Edição</div>
               <div class="card-subtitle">
-                Crie um usuário com perfil de acesso. Apenas ADMIN pode criar.
+                Crie ou edite um usuário com perfil de acesso. Apenas ADMIN pode alterar.
               </div>
             </div>
           </div>
-      
+
           <div class="flex">
             <div class="col">
               <label>Nome *</label>
@@ -1110,7 +1152,7 @@
             </div>
             <div class="col">
               <label>Senha *</label>
-              <input id="uPassword" type="password" class="input" placeholder="Senha inicial" />
+              <input id="uPassword" type="password" class="input" placeholder="Senha inicial ou nova senha" />
             </div>
             <div class="col" style="max-width:160px;">
               <label>Perfil</label>
@@ -1120,160 +1162,180 @@
               </select>
             </div>
           </div>
-              <button id="userFormSubmitBtn" class="btn-sm btn-sm-primary" style="margin-top:10px;" onclick="submitUserForm()">
-                  Criar usuário
-                </button>
-                <button id="userFormCancelEditBtn" class="btn-sm" style="margin-top:10px; margin-left:8px; display:none;" onclick="cancelEditUser()">
-                  Cancelar edição
-                </button>
-                <div id="userMessage" style="font-size:12px; margin-top:6px; color:var(--text-soft);"></div>
 
+          <button id="userFormSubmitBtn" class="btn-sm btn-sm-primary" style="margin-top:10px;" onclick="submitUserForm()">
+            Criar usuário
+          </button>
+          <button id="userFormCancelEditBtn" class="btn-sm" style="margin-top:10px; margin-left:8px; display:none;" onclick="cancelEditUser()">
+            Cancelar edição
+          </button>
+          <div id="userMessage" style="font-size:12px; margin-top:6px; color:var(--text-soft);"></div>
         </div>
       </section>
 
-      <!-- CALENDÁRIO DE PREVENTIVAS -->
-        <section id="page-calendar" class="page-section">
-          <div class="page-header">
+      <!-- CALENDÁRIO DE PREVENTIVAS ---------------------------- -->
+      <section id="page-calendar" class="page-section">
+        <div class="page-header">
+          <div>
+            <div class="page-title">Calendário anual de preventivas</div>
+            <div class="page-subtitle">
+              Visualize as preventivas programadas ao longo do ano.
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
             <div>
-              <div class="page-title">Calendário anual de preventivas</div>
-              <div class="page-subtitle">
-                Visualize as preventivas programadas ao longo do ano.
+              <div class="card-title">Filtro de ano</div>
+              <div class="card-subtitle">
+                Escolha o ano para visualizar as preventivas agendadas.
               </div>
             </div>
-          </div>
-        
-          <div class="card">
-            <div class="card-header">
-              <div>
-                <div class="card-title">Filtro de ano</div>
-                <div class="card-subtitle">
-                  Escolha o ano para visualizar as preventivas agendadas.
-                </div>
-              </div>
-              <div style="display:flex; gap:8px; align-items:center;">
-                <input id="calYear" type="number" class="input" style="width:110px;" />
-                <button class="btn-sm btn-sm-primary" onclick="loadPreventiveCalendar()">Atualizar</button>
-              </div>
-            </div>
-            <div class="card-body">
-              <div id="calendarSummary" style="font-size:12px; color:var(--text-soft);">
-                <!-- preenchido via JS -->
-              </div>
+            <div style="display:flex; gap:8px; align-items:center;">
+              <input id="calYear" type="number" class="input" style="width:110px;" />
+              <button class="btn-sm btn-sm-primary" onclick="loadPreventiveCalendar()">Atualizar</button>
             </div>
           </div>
-        
-          <div id="calendarMonths" class="calendar-months-grid" style="margin-top:16px; display:grid; gap:12px; grid-template-columns:repeat(auto-fit,minmax(260px,1fr));">
-            <!-- cartões de meses preenchidos via JS -->
+          <div class="card-body">
+            <div id="calendarSummary" style="font-size:12px; color:var(--text-soft);">
+              <!-- preenchido via JS -->
+            </div>
           </div>
-        </section>
+        </div>
 
-
+        <div id="calendarMonths"
+             class="calendar-months-grid"
+             style="margin-top:16px; display:grid; gap:12px; grid-template-columns:repeat(auto-fit,minmax(260px,1fr));">
+          <!-- cartões de meses preenchidos via JS -->
+        </div>
+      </section>
     </main>
   </div>
 
   <div id="toast" class="toast"></div>
 
   <script>
-    // ====== CONFIG API ======
+    // ============ CONFIG API ==================================
     const API_BASE = "https://prev-l0mb.onrender.com/api";
 
-      let token = null;
-      let currentUser = null;
-      let computers = [];
-      let users = [];           // 👈 NOVO
-      let editingUserId = null; // 👈 novo
-      let lastReportJson = null;
-      let lastReportType = null;
-      let calendarData = null; // 👈 NOVO
+    let token = null;
+    let currentUser = null;
+    let computers = [];
+    let users = [];
+    let editingUserId = null;
+    let lastReportJson = null;
+    let lastReportType = null;
+    let calendarData = null;
 
-    // ====== UTIL ======
+    // ============ UTIL ========================================
+
     function showToast(message, type = "success") {
-      const el = document.getElementById('toast');
+      const el = document.getElementById("toast");
       el.textContent = message;
-      el.className = 'toast ' + (type === 'error' ? 'error' : '');
-      el.classList.add('show');
-      setTimeout(() => el.classList.remove('show'), 3500);
+      el.className = "toast " + (type === "error" ? "error" : "");
+      el.classList.add("show");
+      setTimeout(() => el.classList.remove("show"), 3500);
     }
 
     function changePage(btn, pageId) {
-      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-    
-      document.querySelectorAll('.page-section').forEach(sec => sec.classList.remove('active'));
-      document.getElementById(pageId).classList.add('active');
-    
-      if (pageId === 'page-dashboard') {
+      document.querySelectorAll(".nav-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+
+      document.querySelectorAll(".page-section").forEach(sec => sec.classList.remove("active"));
+      document.getElementById(pageId).classList.add("active");
+
+      if (pageId === "page-dashboard") {
         loadDashboardStats();
-      } else if (pageId === 'page-computers') {
+      } else if (pageId === "page-computers") {
         loadComputers();
-      } else if (pageId === 'page-users') {
+      } else if (pageId === "page-users") {
         loadUsers();
-      } else if (pageId === 'page-calendar') {
-        loadPreventiveCalendar(); // 👈 NOVO
+      } else if (pageId === "page-calendar") {
+        initCalendarYearIfNeeded();
+        loadPreventiveCalendar();
       }
     }
 
-
     function updateSelectedCount() {
-      const count = Array.from(document.querySelectorAll('.rowCheck'))
+      const count = Array.from(document.querySelectorAll(".rowCheck"))
         .filter(c => c.checked).length;
-      document.getElementById('countSelected').innerText = count;
+      const el = document.getElementById("countSelected");
+      if (el) el.innerText = count;
     }
 
     function initialAvatarText(name) {
-      if (!name) return '?';
+      if (!name) return "?";
       return name.trim().charAt(0).toUpperCase();
     }
 
     function todayIsoDate() {
       const d = new Date();
       const year = d.getFullYear();
-      const month = String(d.getMonth() + 1).padStart(2, '0');
-      const day = String(d.getDate()).padStart(2, '0');
+      const month = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
       return `${year}-${month}-${day}`;
     }
 
-    // ====== AUTENTICAÇÃO ======
+    function formatDateBr(iso) {
+      if (!iso) return "";
+      const [y, m, d] = iso.split("-");
+      if (!y || !m || !d) return iso;
+      return `${d}/${m}/${y}`;
+    }
+
+    function parseDateSafe(str) {
+      if (!str) return null;
+      // espera yyyy-mm-dd
+      const parts = str.split("-");
+      if (parts.length !== 3) return null;
+      const [y, m, d] = parts;
+      const date = new Date(Number(y), Number(m) - 1, Number(d));
+      if (isNaN(date.getTime())) return null;
+      return date;
+    }
+
+    // ============ AUTENTICAÇÃO ===============================
+
     function setAuth(authToken, user) {
       token = authToken;
       currentUser = user;
 
       if (token && user) {
-        document.getElementById('loginSection').style.display = 'none';
-        document.getElementById('appSection').style.display = 'flex';
+        document.getElementById("loginSection").style.display = "none";
+        document.getElementById("appSection").style.display = "flex";
 
-        document.getElementById('headerRightGuest').style.display = 'none';
-        document.getElementById('headerRightLogged').style.display = 'flex';
+        document.getElementById("headerRightGuest").style.display = "none";
+        document.getElementById("headerRightLogged").style.display = "flex";
 
-        document.getElementById('userNameHeader').innerText = user.name;
-        document.getElementById('userRoleHeader').innerText = user.role || '';
-        document.getElementById('userAvatar').innerText = initialAvatarText(user.name);
+        document.getElementById("userNameHeader").innerText = user.name;
+        document.getElementById("userRoleHeader").innerText = user.role || "";
+        document.getElementById("userAvatar").innerText = initialAvatarText(user.name);
 
-        const isAdmin = user.role === 'ADMIN';
-        document.getElementById('bulkSection').style.display = isAdmin ? 'block' : 'none';
-        document.getElementById('importSection').style.display = isAdmin ? 'block' : 'none';
-        document.getElementById('createSection').style.display = isAdmin ? 'block' : 'none';
-        document.getElementById('deleteSelectedWrapper').style.display = isAdmin ? 'inline-flex' : 'none';
+        const isAdmin = user.role === "ADMIN";
+        document.getElementById("bulkSection").style.display = isAdmin ? "block" : "none";
+        document.getElementById("importSection").style.display = isAdmin ? "block" : "none";
+        document.getElementById("createSection").style.display = isAdmin ? "block" : "none";
+        document.getElementById("deleteSelectedWrapper").style.display = isAdmin ? "inline-flex" : "none";
+
+        const navUsersBtn = document.getElementById("navUsersBtn");
+        if (navUsersBtn) {
+          navUsersBtn.style.display = isAdmin ? "flex" : "none";
+        }
 
         loadDashboardStats();
 
-        const navUsersBtn = document.getElementById('navUsersBtn');
-        if (navUsersBtn) {
-          navUsersBtn.style.display = isAdmin ? 'flex' : 'none';
-        }
-        
         if (isAdmin) {
-          // Carrega usuários assim que o ADMIN logar
           loadUsers();
         }
 
-        
+        initCalendarYearIfNeeded();
       } else {
-        document.getElementById('loginSection').style.display = 'flex';
-        document.getElementById('appSection').style.display = 'none';
+        document.getElementById("loginSection").style.display = "flex";
+        document.getElementById("appSection").style.display = "none";
 
-        document.getElementById('headerRightGuest').style.display = 'flex';
-        document.getElementById('headerRightLogged').style.display = 'none';
+        document.getElementById("headerRightGuest").style.display = "flex";
+        document.getElementById("headerRightLogged").style.display = "none";
       }
     }
 
@@ -1283,9 +1345,9 @@
     }
 
     async function login() {
-      const email = document.getElementById('loginEmail').value;
-      const password = document.getElementById('loginPassword').value;
-      const msgEl = document.getElementById('loginMessage');
+      const email = document.getElementById("loginEmail").value;
+      const password = document.getElementById("loginPassword").value;
+      const msgEl = document.getElementById("loginMessage");
       msgEl.innerText = "";
 
       try {
@@ -1296,746 +1358,222 @@
         });
         const data = await res.json();
         if (!res.ok) {
-          msgEl.innerText = data.message || "Erro no login";
-          showToast(data.message || "Erro no login", "error");
+          msgEl.innerText = data.message || "Falha no login";
+          showToast("Falha ao autenticar", "error");
           return;
         }
-        showToast("Login realizado com sucesso!", "success");
         setAuth(data.token, data.user);
+        showToast("Login realizado com sucesso!");
       } catch (err) {
         console.error(err);
-        msgEl.innerText = "Erro ao conectar ao servidor";
-        showToast("Erro ao conectar ao servidor", "error");
+        msgEl.innerText = "Erro de conexão com o servidor.";
+        showToast("Erro de conexão ao autenticar", "error");
       }
     }
 
-    // ====== DASHBOARD ======
+    // ============ DASHBOARD ==================================
+
     async function loadDashboardStats() {
-            if (!token) return;
-          
-            const today = todayIsoDate();
-          
-            // 1) Total de computadores (mantém sua lógica atual usando paginação)
-            try {
-              const resComputers = await fetch(API_BASE + "/computers?page=1&pageSize=1", {
-                headers: { Authorization: "Bearer " + token }
-              });
-              const dataComputers = await resComputers.json();
-              if (resComputers.ok) {
-                document.getElementById('dashTotalComputers').innerText = dataComputers.total ?? '0';
-              } else {
-                document.getElementById('dashTotalComputers').innerText = '–';
-              }
-            } catch (err) {
-              console.error("Erro ao carregar total de computadores:", err);
-              const el = document.getElementById('dashTotalComputers');
-              if (el) el.innerText = '–';
-            }
-          
-            // 2) Carregar uma lista maior de computadores para calcular os indicadores
-            try {
-              // aqui eu assumo que o endpoint de lista é o mesmo, só mudando pageSize
-              const resList = await fetch(API_BASE + "/computers?page=1&pageSize=1000", {
-                headers: { Authorization: "Bearer " + token }
-              });
-              const dataList = await resList.json();
-          
-              if (!resList.ok) {
-                console.error("Erro ao carregar lista de computadores para dashboard:", dataList);
-                setDashboardStatsFallback();
-                return;
-              }
-          
-              // tenta descobrir onde está o array de computadores:
-              // pode ser dataList.items, dataList.computers ou o próprio dataList
-              let list = [];
-              if (Array.isArray(dataList.items)) list = dataList.items;
-              else if (Array.isArray(dataList.computers)) list = dataList.computers;
-              else if (Array.isArray(dataList)) list = dataList;
-          
-              updateDashboardFromComputers(list);
-            } catch (err) {
-              console.error("Erro de rede ao carregar lista de computadores para dashboard:", err);
-              setDashboardStatsFallback();
-            }
-          }
-          
-          // se der erro, coloca apenas traços nos cards secundários
-          function setDashboardStatsFallback() {
-            const elOverdue = document.getElementById('dashOverdue');
-            const elNext30 = document.getElementById('dashNext30');
-            const elNoNext = document.getElementById('dashNoNext');
-          
-            if (elOverdue) elOverdue.innerText = '–';
-            if (elNext30) elNext30.innerText = '–';
-            if (elNoNext) elNoNext.innerText = '–';
-          }
-          
-          // calcula atrasadas / próximas30 / sem data
-          function updateDashboardFromComputers(list) {
-            const now = new Date();
-            const nowTime = now.getTime();
-            const in30 = new Date();
-            in30.setDate(in30.getDate() + 30);
-            const in30Time = in30.getTime();
-          
-            let overdue = 0;
-            let next30 = 0;
-            let noNext = 0;
-          
-            if (!Array.isArray(list)) list = [];
-          
-            list.forEach(pc => {
-              // aqui uso o nome camelCase que normalmente sai do backend que montamos:
-              const next = pc.nextPreventiveDate;
-          
-              if (!next) {
-                noNext++;
-                return;
-              }
-          
-              const dt = new Date(next);
-              if (isNaN(dt.getTime())) {
-                noNext++;
-                return;
-              }
-          
-              const t = dt.getTime();
-              if (t < nowTime) {
-                overdue++;
-              } else if (t >= nowTime && t <= in30Time) {
-                next30++;
-              }
-            });
-          
-            const elOverdue = document.getElementById('dashOverdue');
-            const elNext30 = document.getElementById('dashNext30');
-            const elNoNext = document.getElementById('dashNoNext');
-          
-            if (elOverdue) elOverdue.innerText = overdue;
-            if (elNext30) elNext30.innerText = next30;
-            if (elNoNext) elNoNext.innerText = noNext;
-          }
+      if (!token) return;
 
+      const today = todayIsoDate();
 
-      // Preventivas pendentes
+      // Usar endpoint de relatório summary
       try {
-        const params = new URLSearchParams();
-        params.append('until', today);
-        const resPending = await fetch(API_BASE + "/reports/preventives-pending?" + params.toString(), {
+        const url = API_BASE + "/reports?type=summary&until=" + encodeURIComponent(today);
+        const res = await fetch(url, {
           headers: { Authorization: "Bearer " + token }
         });
-        const dataPending = await resPending.json();
-        if (resPending.ok) {
-          document.getElementById('dashOverdue').innerText = dataPending.overdue ?? 0;
-          document.getElementById('dashDueSoon').innerText = dataPending.due_soon ?? 0;
-        } else {
-          document.getElementById('dashOverdue').innerText = '–';
-          document.getElementById('dashDueSoon').innerText = '–';
+        const data = await res.json();
+
+        if (!res.ok) {
+          console.error("Erro loadDashboardStats:", data);
+          throw new Error("Erro ao carregar relatório");
         }
+
+        // Campos esperados do backend (ajustados ao que definimos no back)
+        const total = data.totalComputers ?? 0;
+        const overdue = data.overdue ?? data.countOverdue ?? 0;
+        const dueTodayOrBefore = data.dueSoon ?? data.countDueSoon ?? 0;
+        const next30 = data.next30 ?? data.countNext30 ?? 0;
+        const noNext = data.noNext ?? data.countNoNext ?? 0;
+
+        document.getElementById("dashTotalComputers").innerText = total;
+        document.getElementById("dashOverdue").innerText = overdue;
+        document.getElementById("dashDueSoon").innerText = dueTodayOrBefore;
+        document.getElementById("dashNext30").innerText = next30;
+        document.getElementById("dashNoNext").innerText = noNext;
+
+        // Distribuição por localização / SO
+        renderSimpleBarList("dashByLocation", data.byLocation || [], "local", "count");
+        renderSimpleBarList("dashByOs", data.byOs || [], "os", "count");
       } catch (err) {
         console.error(err);
-        document.getElementById('dashOverdue').innerText = '–';
-        document.getElementById('dashDueSoon').innerText = '–';
-      }
-
-      // Distribuição por localização
-      try {
-        const resLoc = await fetch(API_BASE + "/reports/by-location", {
-          headers: { Authorization: "Bearer " + token }
-        });
-        const dataLoc = await resLoc.json();
-        const cont = document.getElementById('dashByLocation');
-        if (resLoc.ok && Array.isArray(dataLoc) && dataLoc.length > 0) {
-          const top3 = dataLoc
-            .filter(r => r.location)
-            .sort((a,b) => b.total - a.total)
-            .slice(0, 3);
-
-          if (top3.length === 0) {
-            cont.innerHTML = '<div style="font-size:12px; color:var(--text-soft);">Nenhuma localização cadastrada.</div>';
-          } else {
-            cont.innerHTML = top3.map(r => `
-              <div style="display:flex; justify-content:space-between; align-items:center; font-size:12px; padding:4px 0;">
-                <span>${r.location}</span>
-                <span style="color:var(--accent-strong); font-weight:500;">${r.total}</span>
-              </div>
-            `).join('');
-          }
-        } else {
-          cont.innerHTML = '<div style="font-size:12px; color:var(--text-soft);">Nenhum dado de localização.</div>';
-        }
-      } catch (err) {
-        console.error(err);
-        document.getElementById('dashByLocation').innerHTML =
-          '<div style="font-size:12px; color:var(--text-soft);">Erro ao carregar distribuição.</div>';
-      }
-
-      // Distribuição por sistema operacional
-      try {
-        const resOs = await fetch(API_BASE + "/reports/by-os", {
-          headers: { Authorization: "Bearer " + token }
-        });
-        const dataOs = await resOs.json();
-        const cont = document.getElementById('dashByOs');
-        if (resOs.ok && Array.isArray(dataOs) && dataOs.length > 0) {
-          const top3 = dataOs
-            .filter(r => r.os)
-            .sort((a,b) => b.total - a.total)
-            .slice(0, 3);
-
-          if (top3.length === 0) {
-            cont.innerHTML = '<div style="font-size:12px; color:var(--text-soft);">Nenhum sistema operacional cadastrado.</div>';
-          } else {
-            cont.innerHTML = top3.map(r => `
-              <div style="display:flex; justify-content:space-between; align-items:center; font-size:12px; padding:4px 0;">
-                <span>${r.os}</span>
-                <span style="color:var(--accent-strong); font-weight:500;">${r.total}</span>
-              </div>
-            `).join('');
-          }
-        } else {
-          cont.innerHTML = '<div style="font-size:12px; color:var(--text-soft);">Nenhum dado de SO.</div>';
-        }
-      } catch (err) {
-        console.error(err);
-        document.getElementById('dashByOs').innerHTML =
-          '<div style="font-size:12px; color:var(--text-soft);">Erro ao carregar distribuição.</div>';
+        document.getElementById("dashTotalComputers").innerText = "–";
+        document.getElementById("dashOverdue").innerText = "–";
+        document.getElementById("dashDueSoon").innerText = "–";
+        document.getElementById("dashNext30").innerText = "–";
+        document.getElementById("dashNoNext").innerText = "–";
+        document.getElementById("dashByLocation").innerHTML =
+          '<div style="font-size:12px;color:var(--text-soft);">Erro ao carregar dados.</div>';
+        document.getElementById("dashByOs").innerHTML =
+          '<div style="font-size:12px;color:var(--text-soft);">Erro ao carregar dados.</div>';
       }
     }
 
-    // ====== CALENDÁRIO ANUAL DE PREVENTIVAS ======
+    function renderSimpleBarList(containerId, arr, labelField, valueField) {
+      const container = document.getElementById(containerId);
+      if (!container) return;
 
-          async function loadPreventiveCalendar() {
-            if (!token) {
-              showToast("Faça login para visualizar o calendário.", "error");
-              return;
-            }
-          
-            const yearInput = document.getElementById('calYear');
-            let year = parseInt(yearInput.value, 10);
-          
-            if (isNaN(year)) {
-              const now = new Date();
-              year = now.getFullYear();
-              yearInput.value = year;
-            }
-          
-            try {
-              const res = await fetch(API_BASE + `/calendar/preventives?year=${year}`, {
-                headers: { Authorization: "Bearer " + token }
-              });
-              const data = await res.json();
-          
-              if (!res.ok) {
-                console.error("Erro ao carregar calendário:", data);
-                showToast(data.message || "Erro ao carregar calendário de preventivas.", "error");
-                return;
-              }
-          
-              calendarData = data;
-              renderPreventiveCalendar();
-            } catch (err) {
-              console.error("Erro de rede ao carregar calendário:", err);
-              showToast("Erro ao conectar ao servidor ao carregar calendário.", "error");
-            }
-          }
-          
-          function renderPreventiveCalendar() {
-            if (!calendarData) return;
-          
-            const { year, totalEvents, totalDays, days } = calendarData;
-            const summaryEl = document.getElementById('calendarSummary');
-            const monthsEl = document.getElementById('calendarMonths');
-          
-            if (summaryEl) {
-              summaryEl.innerHTML = `
-                <div style="display:flex; flex-wrap:wrap; gap:8px;">
-                  <span class="chip">Ano: <strong>${year}</strong></span>
-                  <span class="chip">Total de preventivas: <strong>${totalEvents}</strong></span>
-                  <span class="chip">Dias com agendamento: <strong>${totalDays}</strong></span>
-                </div>
-              `;
-            }
-          
-            const byMonth = {};
-            days.forEach(d => {
-              const dateObj = new Date(d.date + 'T00:00:00');
-              const m = dateObj.getMonth(); // 0..11
-              if (!byMonth[m]) byMonth[m] = [];
-              byMonth[m].push(d);
-            });
-          
-            const monthNames = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
-          
-            if (monthsEl) {
-              monthsEl.innerHTML = '';
-          
-              for (let m = 0; m < 12; m++) {
-                const monthDays = byMonth[m] || [];
-                const card = document.createElement('div');
-                card.className = 'card';
-          
-                let itemsHtml = '';
-                if (monthDays.length === 0) {
-                  itemsHtml = `
-                    <div style="font-size:12px; color:var(--text-soft); padding:8px;">
-                      Nenhuma preventiva agendada neste mês.
-                    </div>
-                  `;
-                } else {
-                  itemsHtml = monthDays.map(d => {
-                    const dateObj = new Date(d.date + 'T00:00:00');
-                    const dia = String(dateObj.getDate()).padStart(2, '0');
-                    const mes = String(dateObj.getMonth() + 1).padStart(2, '0');
-          
-                    const listaMaquinas = d.computers
-                      .map(c => {
-                        const infoLoc = c.location ? ` - ${c.location}` : '';
-                        return `<li>${c.name || 'Sem nome'}${infoLoc}</li>`;
-                      })
-                      .join('');
-          
-                    return `
-                      <div style="margin-bottom:8px;">
-                        <div style="font-weight:600; font-size:12px;">${dia}/${mes} - ${d.count} máquina(s)</div>
-                        <ul style="margin:2px 0 0 16px; font-size:11px; color:var(--text-soft);">
-                          ${listaMaquinas}
-                        </ul>
-                      </div>
-                    `;
-                  }).join('');
-                }
-          
-                card.innerHTML = `
-                  <div class="card-header">
-                    <div>
-                      <div class="card-title">${monthNames[m]} / ${year}</div>
-                      <div class="card-subtitle">${monthDays.length} dia(s) com preventivas</div>
-                    </div>
-                  </div>
-                  <div class="card-body">
-                    ${itemsHtml}
-                  </div>
-                `;
-          
-                monthsEl.appendChild(card);
-              }
-            }
-          }
+      if (!arr || arr.length === 0) {
+        container.innerHTML = '<div style="font-size:12px; color:var(--text-soft);">Sem dados para exibir.</div>';
+        return;
+      }
 
+      const total = arr.reduce((sum, item) => sum + (item[valueField] || 0), 0) || 1;
 
-      // ====== USUÁRIOS (ADMIN) ======
-
-          async function loadUsers() {
-            if (!token || !currentUser || currentUser.role !== 'ADMIN') return;
-          
-            try {
-              const res = await fetch(API_BASE + "/users", {
-                headers: { Authorization: "Bearer " + token }
-              });
-          
-              const text = await res.text();
-              let data;
-              try {
-                data = JSON.parse(text);
-              } catch (e) {
-                console.error("Resposta não é JSON em /users. Status:", res.status, "Body:", text);
-                showToast("Erro ao carregar usuários (resposta inválida do servidor).", "error");
-                return;
-              }
-          
-              if (!res.ok) {
-                console.error("Erro HTTP em /users:", res.status, data);
-                showToast(data.message || "Erro ao carregar usuários", "error");
-                return;
-              }
-          
-              users = data;
-              renderUsers();
-            } catch (err) {
-              console.error("Erro de rede/fetch em /users:", err);
-              showToast("Erro ao conectar ao servidor ao carregar usuários.", "error");
-            }
-          }
-          
-          function renderUsers() {
-              const tbody = document.getElementById('usersTableBody');
-              if (!tbody) return;
-            
-              tbody.innerHTML = "";
-            
-              if (!users || users.length === 0) {
-                tbody.innerHTML = `
-                  <tr>
-                    <td colspan="7" style="text-align:center; font-size:12px; color:var(--text-soft); padding:8px;">
-                      Nenhum usuário encontrado.
-                    </td>
-                  </tr>
-                `;
-                const el = document.getElementById('countUsersSelected');
-                if (el) el.innerText = "0";
-                return;
-              }
-            
-              users.forEach(u => {
-                const created = u.createdAt ? new Date(u.createdAt).toLocaleString() : "";
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                  <td><input type="checkbox" class="userRowCheck" data-id="${u.id}" /></td>
-                  <td>${u.id}</td>
-                  <td>${u.name}</td>
-                  <td>${u.email}</td>
-                  <td>${u.role}</td>
-                  <td>${created}</td>
-                  <td>
-                    <button class="btn-sm" onclick="startEditUser(${u.id})">Editar</button>
-                    <button class="btn-sm" onclick="resetPasswordUser(${u.id})">Redefinir senha</button>
-                  </td>
-                `;
-                tbody.appendChild(tr);
-              });
-            
-              document.querySelectorAll('.userRowCheck').forEach(chk => {
-                chk.addEventListener('change', updateUsersSelectedCount);
-              });
-              updateUsersSelectedCount();
-            }
-
-            function startEditUser(id) {
-              const user = users.find(u => u.id === id);
-              if (!user) {
-                showToast("Usuário não encontrado na lista carregada.", "error");
-                return;
-              }
-              fillUserForm(user);
-              setUserFormModeEdit(user);
-            }
-
-    function updateDashboardCards(computers) {
-      const now = new Date();
-      const nowTime = now.getTime();
-      const in30 = new Date();
-      in30.setDate(in30.getDate() + 30);
-      const in30Time = in30.getTime();
-    
-      let overdue = 0;
-      let next30 = 0;
-      let noNext = 0;
-    
-      computers.forEach(pc => {
-        const next = pc.nextPreventiveDate;
-    
-        if (!next) {
-          noNext++;
-          return;
-        }
-    
-        const dt = new Date(next);
-        if (isNaN(dt.getTime())) {
-          noNext++;
-          return;
-        }
-    
-        const t = dt.getTime();
-    
-        if (t < nowTime) overdue++;
-        else if (t <= in30Time) next30++;
-      });
-    
-      document.getElementById('dashTotalComputers').innerText = computers.length;
-      document.getElementById('dashOverdue').innerText = overdue;
-      document.getElementById('dashNext30').innerText = next30;
-      document.getElementById('dashNoNext').innerText = noNext;
+      container.innerHTML = arr
+        .slice(0, 3)
+        .map(item => {
+          const label = item[labelField] || "N/D";
+          const value = item[valueField] || 0;
+          const percent = Math.round((value / total) * 100);
+          return `
+            <div class="bar-row">
+              <div class="bar-label">${label}</div>
+              <div class="bar-track">
+                <div class="bar-fill" style="width:${percent}%;"></div>
+              </div>
+              <div class="bar-value">${value}</div>
+            </div>
+          `;
+        })
+        .join("");
     }
 
-    
-          //Perto do bloco do usuario
-            function fillUserForm(user) {
-                document.getElementById('uName').value = user.name || "";
-                document.getElementById('uEmail').value = user.email || "";
-                document.getElementById('uRole').value = user.role || "USER";
-              
-                // senha só é usada na criação; deixamos em branco na edição
-                document.getElementById('uPassword').value = "";
-              }
-              
-              function setUserFormModeCreate() {
-                editingUserId = null;
-                const btn = document.getElementById('userFormSubmitBtn');
-                const cancelBtn = document.getElementById('userFormCancelEditBtn');
-                const msgEl = document.getElementById('userMessage');
-              
-                if (btn) btn.innerText = "Criar usuário";
-                if (cancelBtn) cancelBtn.style.display = "none";
-                if (msgEl) msgEl.innerText = "Crie um novo usuário do sistema.";
-              }
-              
-              function setUserFormModeEdit(user) {
-                editingUserId = user.id;
-                const btn = document.getElementById('userFormSubmitBtn');
-                const cancelBtn = document.getElementById('userFormCancelEditBtn');
-                const msgEl = document.getElementById('userMessage');
-              
-                if (btn) btn.innerText = `Salvar alterações (ID ${user.id})`;
-                if (cancelBtn) cancelBtn.style.display = "inline-flex";
-                if (msgEl) msgEl.innerText = "Editando usuário existente. A senha não é alterada aqui, use 'Redefinir senha'.";
-              }
-              
-              function cancelEditUser() {
-                setUserFormModeCreate();
-                document.getElementById('uName').value = "";
-                document.getElementById('uEmail').value = "";
-                document.getElementById('uPassword').value = "";
-                document.getElementById('uRole').value = "USER";
-              }
+    // ============ COMPUTADORES / LISTAGEM ====================
 
-          
-          function updateUsersSelectedCount() {
-            const count = Array.from(document.querySelectorAll('.userRowCheck'))
-              .filter(c => c.checked).length;
-            const el = document.getElementById('countUsersSelected');
-            if (el) el.innerText = count;
-          }
-          
-          function toggleSelectAllUsers(checkbox) {
-            const checks = document.querySelectorAll('.userRowCheck');
-            checks.forEach((c) => (c.checked = checkbox.checked));
-            updateUsersSelectedCount();
-          }
-          
-          async function submitUserForm() {
-          if (!token || !currentUser || currentUser.role !== 'ADMIN') {
-            showToast("Apenas ADMIN pode gerenciar usuários.", "error");
-            return;
-          }
-        
-          const name = document.getElementById('uName').value.trim();
-          const email = document.getElementById('uEmail').value.trim();
-          const password = document.getElementById('uPassword').value.trim();
-          const role = document.getElementById('uRole').value;
-          const msgEl = document.getElementById('userMessage');
-        
-          if (!name || !email || (!editingUserId && !password)) {
-            showToast(editingUserId ? "Preencha nome e email." : "Preencha nome, email e senha.", "error");
-            if (msgEl) msgEl.innerText = editingUserId
-              ? "Preencha nome e email."
-              : "Preencha nome, email e senha.";
-            return;
-          }
-        
-          try {
-            if (!editingUserId) {
-              // CRIAR
-              const res = await fetch(API_BASE + "/users", {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                  Authorization: "Bearer " + token
-                },
-                body: JSON.stringify({ name, email, password, role })
-              });
-              const data = await res.json();
-              if (!res.ok) {
-                showToast(data.message || "Erro ao criar usuário.", "error");
-                if (msgEl) msgEl.innerText = data.message || "Erro ao criar usuário.";
-                return;
-              }
-        
-              document.getElementById('uName').value = "";
-              document.getElementById('uEmail').value = "";
-              document.getElementById('uPassword').value = "";
-              document.getElementById('uRole').value = "USER";
-              if (msgEl) msgEl.innerText = "Usuário criado com sucesso.";
-        
-              showToast("Usuário criado com sucesso!", "success");
-              loadUsers();
-            } else {
-              // EDITAR
-              const res = await fetch(API_BASE + "/users/" + editingUserId, {
-                method: "PATCH",
-                headers: {
-                  "Content-Type": "application/json",
-                  Authorization: "Bearer " + token
-                },
-                body: JSON.stringify({ name, email, role })
-              });
-              const data = await res.json();
-              if (!res.ok) {
-                showToast(data.message || "Erro ao editar usuário.", "error");
-                if (msgEl) msgEl.innerText = data.message || "Erro ao editar usuário.";
-                return;
-              }
-        
-              showToast("Usuário atualizado com sucesso!", "success");
-              setUserFormModeCreate();
-              document.getElementById('uName').value = "";
-              document.getElementById('uEmail').value = "";
-              document.getElementById('uPassword').value = "";
-              document.getElementById('uRole').value = "USER";
-              if (msgEl) msgEl.innerText = "Usuário atualizado com sucesso.";
-        
-              loadUsers();
-            }
-          } catch (err) {
-            console.error(err);
-            if (msgEl) msgEl.innerText = "Erro ao conectar ao servidor.";
-            showToast("Erro ao conectar ao servidor.", "error");
-          }
-        }
+    function getFiltersQueryString() {
+      const search = document.getElementById("fSearch").value.trim();
+      const loc = document.getElementById("fLocation").value.trim();
+      const os = document.getElementById("fOs").value.trim();
+      const nextFrom = document.getElementById("fNextFrom").value;
+      const nextTo = document.getElementById("fNextTo").value;
+      const all = document.getElementById("fAll").checked;
 
+      const params = new URLSearchParams();
+      if (search) params.append("search", search);
+      if (loc) params.append("location", loc);
+      if (os) params.append("os", os);
+      if (nextFrom) params.append("nextFrom", nextFrom);
+      if (nextTo) params.append("nextTo", nextTo);
+      if (all) {
+        params.append("page", "1");
+        params.append("pageSize", "10000");
+      } else {
+        params.append("page", "1");
+        params.append("pageSize", "100");
+      }
+      return params.toString();
+    }
 
-    //Reset Password
-
-    async function resetPasswordUser(id) {
-          if (!token || !currentUser || currentUser.role !== 'ADMIN') {
-            showToast("Apenas ADMIN pode redefinir senhas.", "error");
-            return;
-          }
-        
-          const user = users.find(u => u.id === id);
-          if (!user) {
-            showToast("Usuário não encontrado na lista carregada.", "error");
-            return;
-          }
-        
-          const novaSenha = window.prompt(`Digite a nova senha para o usuário ${user.name} (ID ${user.id}):`);
-          if (!novaSenha) {
-            return; // cancelado ou vazio
-          }
-          if (novaSenha.length < 4) {
-            showToast("Defina uma senha com pelo menos 4 caracteres.", "error");
-            return;
-          }
-        
-          try {
-            const res = await fetch(API_BASE + `/users/${id}/reset-password`, {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: "Bearer " + token
-              },
-              body: JSON.stringify({ newPassword: novaSenha })
-            });
-            const data = await res.json();
-            if (!res.ok) {
-              showToast(data.message || "Erro ao redefinir senha.", "error");
-              return;
-            }
-        
-            showToast("Senha redefinida com sucesso!", "success");
-          } catch (err) {
-            console.error("Erro ao redefinir senha:", err);
-            showToast("Erro ao conectar ao servidor ao redefinir senha.", "error");
-          }
-        }
-
-
-
-    
-
-    // ====== COMPUTADORES ======
     function clearFilters() {
-      document.getElementById('fSearch').value = "";
-      document.getElementById('fLocation').value = "";
-      document.getElementById('fOs').value = "";
-      document.getElementById('fNextFrom').value = "";
-      document.getElementById('fNextTo').value = "";
-      const all = document.getElementById('fAll');
-      if (all) all.checked = false;
+      document.getElementById("fSearch").value = "";
+      document.getElementById("fLocation").value = "";
+      document.getElementById("fOs").value = "";
+      document.getElementById("fNextFrom").value = "";
+      document.getElementById("fNextTo").value = "";
+      document.getElementById("fAll").checked = false;
       loadComputers();
     }
 
     async function loadComputers() {
       if (!token) return;
 
-      const search = document.getElementById('fSearch').value;
-      const location = document.getElementById('fLocation').value;
-      const os = document.getElementById('fOs').value;
-      const next_from = document.getElementById('fNextFrom').value;
-      const next_to = document.getElementById('fNextTo').value;
-      const all = document.getElementById('fAll') ? document.getElementById('fAll').checked : false;
-
-      const params = new URLSearchParams();
-      if (search) params.append('search', search);
-      if (location) params.append('location', location);
-      if (os) params.append('os', os);
-      if (next_from) params.append('next_from', next_from);
-      if (next_to) params.append('next_to', next_to);
-
-      if (all) {
-        params.append('page', '1');
-        params.append('pageSize', '10000');
-      }
-
+      const qs = getFiltersQueryString();
       try {
-        const res = await fetch(API_BASE + "/computers?" + params.toString(), {
+        const res = await fetch(API_BASE + "/computers?" + qs, {
           headers: { Authorization: "Bearer " + token }
         });
         const data = await res.json();
         if (!res.ok) {
-          alert(data.message || "Erro ao carregar computadores");
-          showToast(data.message || "Erro ao carregar computadores", "error");
+          console.error("Erro loadComputers:", data);
+          showToast("Erro ao carregar computadores", "error");
           return;
         }
-        computers = data.data;
-        renderComputers();
 
-        document.getElementById('statTotalComputers').innerText = data.total ?? computers.length;
-        document.getElementById('statNextFilter').innerText = (next_from || next_to) ? "Filtrado" : "Sem filtro";
+        computers = data.items || data.computers || [];
+        const total = data.total ?? computers.length;
+
+        document.getElementById("statTotalComputers").innerText = total;
+
+        // Próxima preventiva mais próxima na lista filtrada
+        let nextDate = null;
+        computers.forEach(c => {
+          if (c.dataProximaPreventiva) {
+            const d = parseDateSafe(c.dataProximaPreventiva);
+            if (d && (!nextDate || d < nextDate)) nextDate = d;
+          }
+        });
+        document.getElementById("statNextFilter").innerText =
+          nextDate ? formatDateBr(nextDate.toISOString().slice(0,10)) : "—";
+
+        renderComputersTable();
       } catch (err) {
         console.error(err);
-        alert("Erro ao conectar ao servidor");
-        showToast("Erro ao conectar ao servidor", "error");
+        showToast("Erro ao conectar ao servidor ao carregar computadores", "error");
       }
     }
 
-    function renderComputers() {
-      const tbody = document.getElementById('computersTableBody');
+    function renderComputersTable() {
+      const tbody = document.getElementById("computersTableBody");
       tbody.innerHTML = "";
-      computers.forEach((c) => {
-        const tr = document.createElement('tr');
+
+      computers.forEach(c => {
+        const tr = document.createElement("tr");
         tr.innerHTML = `
-          <td><input type="checkbox" class="rowCheck" data-id="${c.id}" /></td>
+          <td><input type="checkbox" class="rowCheck" data-id="${c.id}"></td>
           <td>${c.id}</td>
-          <td>${c.name}</td>
-          <td>${c.location || ""}</td>
-          <td>${c.os}</td>
-          <td>${c.lastPreventiveDate ? c.lastPreventiveDate.substring(0,10) : ""}</td>
-          <td>${c.nextPreventiveDate ? c.nextPreventiveDate.substring(0,10) : ""}</td>
+          <td>${c.nome || ""}</td>
+          <td>${c.localizacao || ""}</td>
+          <td>${c.sistemaOperacional || ""}</td>
+          <td>${c.dataUltimaPreventiva ? formatDateBr(c.dataUltimaPreventiva) : ""}</td>
+          <td>${c.dataProximaPreventiva ? formatDateBr(c.dataProximaPreventiva) : ""}</td>
         `;
         tbody.appendChild(tr);
       });
 
-      document.querySelectorAll('.rowCheck').forEach(chk => {
-        chk.addEventListener('change', updateSelectedCount);
+      document.querySelectorAll(".rowCheck").forEach(chk => {
+        chk.addEventListener("change", () => {
+          updateSelectedCount();
+        });
+      });
+
+      document.getElementById("countSelected").innerText = "0";
+      const selectAll = document.getElementById("selectAll");
+      if (selectAll) selectAll.checked = false;
+    }
+
+    function toggleSelectAll(checkbox) {
+      const checked = checkbox.checked;
+      document.querySelectorAll(".rowCheck").forEach(c => {
+        c.checked = checked;
       });
       updateSelectedCount();
     }
 
-    function toggleSelectAll(checkbox) {
-      const checks = document.querySelectorAll('.rowCheck');
-      checks.forEach((c) => (c.checked = checkbox.checked));
-      updateSelectedCount();
-    }
-
-    // CADASTRO MANUAL
     async function createComputer() {
-      if (!token || !currentUser || currentUser.role !== 'ADMIN') {
-        showToast("Apenas ADMIN pode cadastrar computadores.", "error");
-        return;
-      }
+      if (!token) return;
+      const nome = document.getElementById("newName").value.trim();
+      const fabricante = document.getElementById("newManufacturer").value.trim();
+      const localizacao = document.getElementById("newLocation").value.trim();
+      const numeroSerie = document.getElementById("newSerial").value.trim();
+      const sistemaOperacional = document.getElementById("newOs").value.trim();
+      const dataUltimaPreventiva = document.getElementById("newLast").value || null;
+      const dataProximaPreventiva = document.getElementById("newNext").value || null;
 
-      const name = document.getElementById('newName').value.trim();
-      const manufacturer = document.getElementById('newManufacturer').value.trim();
-      const location = document.getElementById('newLocation').value.trim();
-      const serialNumber = document.getElementById('newSerial').value.trim();
-      const os = document.getElementById('newOs').value.trim();
-      const lastPreventiveDate = document.getElementById('newLast').value;
-      const nextPreventiveDate = document.getElementById('newNext').value;
-
-      if (!name || !location || !serialNumber || !os) {
-        showToast("Preencha os campos obrigatórios (*).", "error");
+      if (!nome || !localizacao || !numeroSerie || !sistemaOperacional) {
+        showToast("Campos obrigatórios: nome, localização, nº de série, SO.", "error");
         return;
       }
 
@@ -2047,542 +1585,696 @@
             Authorization: "Bearer " + token
           },
           body: JSON.stringify({
-            name,
-            manufacturer: manufacturer || null,
-            location,
-            serialNumber,
-            os,
-            lastPreventiveDate: lastPreventiveDate || null,
-            nextPreventiveDate: nextPreventiveDate || null
+            nome,
+            fabricante,
+            localizacao,
+            numeroSerie,
+            sistemaOperacional,
+            dataUltimaPreventiva,
+            dataProximaPreventiva
           })
         });
         const data = await res.json();
         if (!res.ok) {
-          showToast(data.message || "Erro ao criar computador.", "error");
+          console.error("Erro createComputer:", data);
+          showToast(data.message || "Erro ao criar computador", "error");
           return;
         }
 
-        document.getElementById('newName').value = "";
-        document.getElementById('newManufacturer').value = "";
-        document.getElementById('newLocation').value = "";
-        document.getElementById('newSerial').value = "";
-        document.getElementById('newOs').value = "";
-        document.getElementById('newLast').value = "";
-        document.getElementById('newNext').value = "";
+        document.getElementById("newName").value = "";
+        document.getElementById("newManufacturer").value = "";
+        document.getElementById("newLocation").value = "";
+        document.getElementById("newSerial").value = "";
+        document.getElementById("newOs").value = "";
+        document.getElementById("newLast").value = "";
+        document.getElementById("newNext").value = "";
 
-        showToast("Computador cadastrado com sucesso!", "success");
+        showToast("Computador criado com sucesso!");
         loadComputers();
         loadDashboardStats();
       } catch (err) {
         console.error(err);
-        showToast("Erro ao conectar ao servidor.", "error");
+        showToast("Erro de conexão ao criar computador", "error");
       }
     }
 
-    // EXCLUSÃO
     async function deleteSelected() {
-      if (!token || !currentUser || currentUser.role !== 'ADMIN') {
-        showToast("Apenas ADMIN pode excluir computadores.", "error");
+      if (!token) return;
+
+      const ids = Array.from(document.querySelectorAll(".rowCheck"))
+        .filter(c => c.checked)
+        .map(c => c.getAttribute("data-id"));
+
+      if (!ids.length) {
+        showToast("Nenhum computador selecionado.", "error");
         return;
       }
 
-      const ids = Array.from(document.querySelectorAll('.rowCheck'))
-        .filter((c) => c.checked)
-        .map((c) => Number(c.getAttribute('data-id')));
-
-      if (ids.length === 0) {
-        showToast("Selecione ao menos um computador para excluir.", "error");
-        return;
-      }
-
-      const confirma = window.confirm(
-        `Tem certeza que deseja excluir ${ids.length} computador(es)? Essa ação não pode ser desfeita.`
-      );
-      if (!confirma) return;
+      if (!confirm("Deseja realmente excluir os computadores selecionados?")) return;
 
       try {
-        for (const id of ids) {
-          await fetch(API_BASE + "/computers/" + id, {
-            method: "DELETE",
-            headers: { Authorization: "Bearer " + token }
-          });
-        }
-        showToast("Computadores excluídos com sucesso.", "success");
-        loadComputers();
-        loadDashboardStats();
-      } catch (err) {
-        console.error(err);
-        showToast("Erro ao excluir computadores.", "error");
-      }
-    }
-
-    // BULK UPDATE
-    async function bulkUpdate() {
-      if (!token || !currentUser || currentUser.role !== 'ADMIN') {
-        alert("Apenas ADMIN pode usar edição em massa.");
-        showToast("Apenas ADMIN pode usar edição em massa.", "error");
-        return;
-      }
-      const ids = Array.from(document.querySelectorAll('.rowCheck'))
-        .filter((c) => c.checked)
-        .map((c) => Number(c.getAttribute('data-id')));
-
-      if (ids.length === 0) {
-        alert("Selecione ao menos um computador.");
-        showToast("Selecione ao menos um computador.", "error");
-        return;
-      }
-
-      const fields = {};
-      const manufacturer = document.getElementById('bulkManufacturer').value;
-      const location = document.getElementById('bulkLocation').value;
-      const os = document.getElementById('bulkOs').value;
-      const last = document.getElementById('bulkLast').value;
-      const next = document.getElementById('bulkNext').value;
-
-      if (manufacturer) fields.manufacturer = manufacturer;
-      if (location) fields.location = location;
-      if (os) fields.os = os;
-      if (last) fields.lastPreventiveDate = last;
-      if (next) fields.nextPreventiveDate = next;
-
-      if (Object.keys(fields).length === 0) {
-        alert("Informe ao menos um campo para alterar.");
-        showToast("Informe ao menos um campo para alterar.", "error");
-        return;
-      }
-
-      const msgEl = document.getElementById('bulkMessage');
-      msgEl.innerText = "Aplicando alterações...";
-
-      try {
-        const res = await fetch(API_BASE + "/computers/bulk-update", {
+        const res = await fetch(API_BASE + "/computers/bulk-delete", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             Authorization: "Bearer " + token
           },
-          body: JSON.stringify({ ids, fields })
+          body: JSON.stringify({ ids })
         });
         const data = await res.json();
         if (!res.ok) {
-          msgEl.innerText = data.message || "Erro no bulk update";
-          showToast(data.message || "Erro no bulk update", "error");
+          console.error("Erro deleteSelected:", data);
+          showToast(data.message || "Erro ao excluir computadores", "error");
           return;
         }
-        msgEl.innerText = "Registros atualizados: " + data.updated_count;
-        showToast("Edição em massa concluída!", "success");
+        showToast("Computadores excluídos com sucesso.");
         loadComputers();
         loadDashboardStats();
       } catch (err) {
         console.error(err);
-        msgEl.innerText = "Erro ao conectar ao servidor";
-        showToast("Erro ao conectar ao servidor", "error");
+        showToast("Erro de conexão ao excluir computadores", "error");
       }
     }
 
-    // IMPORTAÇÃO CSV
-    async function importCsv() {
-      if (!token || !currentUser || currentUser.role !== 'ADMIN') {
-        alert("Apenas ADMIN pode importar CSV.");
-        showToast("Apenas ADMIN pode importar CSV.", "error");
+    async function bulkUpdate() {
+      if (!token) return;
+
+      const ids = Array.from(document.querySelectorAll(".rowCheck"))
+        .filter(c => c.checked)
+        .map(c => c.getAttribute("data-id"));
+
+      if (!ids.length) {
+        showToast("Nenhum computador selecionado para edição em massa.", "error");
         return;
       }
-      const fileInput = document.getElementById('csvFile');
-      if (!fileInput.files[0]) {
-        alert("Selecione um arquivo CSV.");
-        showToast("Selecione um arquivo CSV.", "error");
+
+      const fabricante = document.getElementById("bulkManufacturer").value.trim();
+      const localizacao = document.getElementById("bulkLocation").value.trim();
+      const sistemaOperacional = document.getElementById("bulkOs").value.trim();
+      const dataUltimaPreventiva = document.getElementById("bulkLast").value || null;
+      const dataProximaPreventiva = document.getElementById("bulkNext").value || null;
+
+      const payload = { ids };
+      if (fabricante) payload.fabricante = fabricante;
+      if (localizacao) payload.localizacao = localizacao;
+      if (sistemaOperacional) payload.sistemaOperacional = sistemaOperacional;
+      if (dataUltimaPreventiva) payload.dataUltimaPreventiva = dataUltimaPreventiva;
+      if (dataProximaPreventiva) payload.dataProximaPreventiva = dataProximaPreventiva;
+
+      if (Object.keys(payload).length === 1) {
+        showToast("Nenhum campo para atualizar.", "error");
         return;
       }
-      const formData = new FormData();
-      formData.append("file", fileInput.files[0]);
-      const resultEl = document.getElementById('importResult');
-      resultEl.innerText = "Importando...";
 
       try {
-        const res = await fetch(API_BASE + "/import/import-csv", {
+        const res = await fetch(API_BASE + "/computers/bulk-update", {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "Bearer " + token
+          },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          console.error("Erro bulkUpdate:", data);
+          showToast(data.message || "Erro na edição em massa", "error");
+          return;
+        }
+        document.getElementById("bulkMessage").innerText = "Edição em massa concluída.";
+        showToast("Edição em massa concluída!");
+        loadComputers();
+        loadDashboardStats();
+      } catch (err) {
+        console.error(err);
+        showToast("Erro de conexão na edição em massa", "error");
+      }
+    }
+
+    // ============ IMPORTAÇÃO CSV =============================
+
+    async function importCsv() {
+      if (!token) return;
+
+      const fileInput = document.getElementById("csvFile");
+      const resultEl = document.getElementById("importResult");
+      resultEl.textContent = "{}";
+
+      if (!fileInput.files.length) {
+        showToast("Selecione um arquivo CSV para importar.", "error");
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("file", fileInput.files[0]);
+
+      try {
+        const res = await fetch(API_BASE + "/import/computers", {
           method: "POST",
-          headers: { Authorization: "Bearer " + token },
+          headers: {
+            Authorization: "Bearer " + token
+          },
           body: formData
         });
         const data = await res.json();
+        resultEl.textContent = JSON.stringify(data, null, 2);
         if (!res.ok) {
-          resultEl.innerText = data.message || "Erro na importação";
-          showToast(data.message || "Erro na importação", "error");
+          showToast(data.message || "Erro ao importar CSV", "error");
           return;
         }
-        resultEl.innerText = JSON.stringify(data, null, 2);
-        showToast("Importação concluída!", "success");
+        showToast("Importação concluída com sucesso!");
         loadComputers();
         loadDashboardStats();
       } catch (err) {
         console.error(err);
-        resultEl.innerText = "Erro ao conectar ao servidor";
-        showToast("Erro ao conectar ao servidor", "error");
+        showToast("Erro de conexão na importação", "error");
+        resultEl.textContent = JSON.stringify({ error: "Erro de conexão" }, null, 2);
       }
     }
 
-    // ====== RELATÓRIOS COM GRÁFICOS ======
+    // ============ RELATÓRIOS =================================
 
     function toggleJson() {
-      const container = document.getElementById('jsonContainer');
-      container.style.display = container.style.display === 'none' || container.style.display === '' ? 'block' : 'none';
-      if (lastReportJson) {
-        document.getElementById('reportJson').innerText = JSON.stringify(lastReportJson, null, 2);
-      }
+      const container = document.getElementById("jsonContainer");
+      if (!container) return;
+      container.style.display = container.style.display === "none" ? "block" : "none";
     }
 
     async function runReport() {
       if (!token) return;
 
-      const type = document.getElementById('reportType').value;
-      const until = document.getElementById('rUntil').value;
-      const visual = document.getElementById('reportVisual');
-      const jsonContainer = document.getElementById('jsonContainer');
-      jsonContainer.style.display = 'none';
-      document.getElementById('reportJson').innerText = "{}";
+      const type = document.getElementById("reportType").value;
+      const until = document.getElementById("rUntil").value;
 
-      visual.innerHTML = '<div style="font-size:12px; color:var(--text-soft);">Carregando relatório...</div>';
-
-      let url = "";
-      let params = new URLSearchParams();
-
-      switch (type) {
-        case "summary":
-          url = "/reports/summary";
-          if (until) params.append("until", until);
-          break;
-        case "pending":
-          url = "/reports/preventives-pending";
-          if (until) params.append("until", until);
-          break;
-        case "by-location":
-          url = "/reports/by-location";
-          break;
-        case "by-os":
-          url = "/reports/by-os";
-          break;
-        case "by-manufacturer":
-          url = "/reports/by-manufacturer";
-          break;
-        case "no-next-date":
-          url = "/reports/no-next-date";
-          break;
-        default:
-          visual.innerHTML = "Tipo de relatório inválido.";
-          return;
-      }
+      const params = new URLSearchParams();
+      params.append("type", type);
+      if (until) params.append("until", until);
 
       try {
-        const res = await fetch(API_BASE + url + (params.toString() ? "?" + params.toString() : ""), {
+        const res = await fetch(API_BASE + "/reports?" + params.toString(), {
           headers: { Authorization: "Bearer " + token }
         });
         const data = await res.json();
-
         if (!res.ok) {
-          visual.innerHTML = data.message || "Erro ao gerar relatório";
+          console.error("Erro runReport:", data);
           showToast(data.message || "Erro ao gerar relatório", "error");
           return;
         }
-
         lastReportJson = data;
         lastReportType = type;
+
+        document.getElementById("reportJson").textContent = JSON.stringify(data, null, 2);
         renderReportVisual(type, data);
-        showToast("Relatório gerado com sucesso!", "success");
+        showToast("Relatório gerado.");
       } catch (err) {
         console.error(err);
-        visual.innerHTML = "Erro ao conectar ao servidor";
-        showToast("Erro ao conectar ao servidor", "error");
+        showToast("Erro de conexão ao gerar relatório", "error");
       }
     }
 
-    function getReportTypeLabel(type) {
-  switch (type) {
-    case "summary": return "Resumo geral de preventivas";
-    case "pending": return "Preventivas pendentes até a data";
-    case "by-location": return "Distribuição por localização";
-    case "by-os": return "Distribuição por sistema operacional";
-    case "by-manufacturer": return "Distribuição por fabricante";
-    case "no-next-date": return "Máquinas sem próxima preventiva";
-    default: return "Relatório";
-  }
-}
-
-function exportReportPdf() {
-  const type = document.getElementById('reportType').value;
-  const visual = document.getElementById('reportVisual');
-
-  if (!visual || !visual.innerHTML.trim() || !lastReportJson) {
-    showToast("Gere um relatório antes de exportar para PDF.", "error");
-    return;
-  }
-
-  const title = getReportTypeLabel(type);
-  const now = new Date();
-  const generatedAt = now.toLocaleString();
-
-  // Abre uma nova janela com layout limpo para impressão
-  const win = window.open('', '_blank');
-  win.document.write(`
-    <html>
-      <head>
-        <title>${title}</title>
-        <meta charset="UTF-8" />
-        <style>
-          body {
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-            background: #ffffff;
-            color: #111827;
-            margin: 16px;
-          }
-          h1 {
-            font-size: 20px;
-            margin-bottom: 4px;
-          }
-          .subtitle {
-            font-size: 11px;
-            color: #6b7280;
-            margin-bottom: 14px;
-          }
-          .section {
-            margin-top: 10px;
-          }
-          /* Ajuste básico para tabelas e cartões */
-          table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 11px;
-          }
-          th, td {
-            border: 1px solid #e5e7eb;
-            padding: 4px 6px;
-          }
-          th {
-            background: #f3f4f6;
-            text-align: left;
-          }
-          .report-card,
-          .stat-card {
-            border-radius: 8px;
-            border: 1px solid #e5e7eb;
-            background: #f9fafb;
-            padding: 8px;
-            margin-bottom: 8px;
-          }
-          .report-card-label,
-          .stat-label {
-            font-size: 11px;
-            color: #6b7280;
-          }
-          .report-card-value,
-          .stat-value {
-            font-size: 16px;
-            font-weight: 600;
-          }
-          .bar-track {
-            border-radius: 999px;
-            background: #e5e7eb;
-          }
-          .bar-fill {
-            background: #0ea5e9;
-          }
-          .bar-label {
-            font-size: 11px;
-          }
-          .bar-value {
-            font-size: 11px;
-          }
-
-          @page {
-            margin: 16mm;
-          }
-        </style>
-      </head>
-      <body>
-        <h1>${title}</h1>
-        <div class="subtitle">
-          Gerado em ${generatedAt}
-        </div>
-        <div class="section">
-          ${visual.innerHTML}
-        </div>
-      </body>
-    </html>
-  `);
-
-  win.document.close();
-  win.focus();
-
-  // Abre o diálogo de impressão (no navegador, escolha "Salvar como PDF")
-  win.print();
-}
-
-
     function renderReportVisual(type, data) {
-      const visual = document.getElementById('reportVisual');
+      const container = document.getElementById("reportVisual");
+      if (!container) return;
+
+      if (!data) {
+        container.innerHTML = '<div style="font-size:12px;color:var(--text-soft);">Sem dados para exibir.</div>';
+        return;
+      }
 
       if (type === "summary") {
         const total = data.totalComputers ?? 0;
-        const overdue = data.overdue ?? 0;
-        const dueSoon = data.dueSoon7Days ?? 0;
-        const noNext = data.noNextDate ?? 0;
+        const overdue = data.overdue ?? data.countOverdue ?? 0;
+        const pending = data.pending ?? 0;
+        const next30 = data.next30 ?? data.countNext30 ?? 0;
+        const noNext = data.noNext ?? data.countNoNext ?? 0;
 
-        visual.innerHTML = `
+        container.innerHTML = `
           <div class="report-grid">
             <div class="report-card">
               <div class="report-card-label">Total de computadores</div>
               <div class="report-card-value">${total}</div>
-              <div class="report-card-note">Todos os equipamentos cadastrados</div>
-            </div>
-            <div class="report-card">
-              <div class="report-card-label">Vencidas até ${data.until || '-'}</div>
-              <div class="report-card-value" style="color:var(--danger);">${overdue}</div>
-              <div class="report-card-note">Preventivas com data já vencida</div>
-            </div>
-            <div class="report-card">
-              <div class="report-card-label">A vencer em 7 dias</div>
-              <div class="report-card-value" style="color:var(--accent-strong);">${dueSoon}</div>
-              <div class="report-card-note">Janela de 7 dias a partir da data de referência</div>
-            </div>
-            <div class="report-card">
-              <div class="report-card-label">Sem próxima preventiva definida</div>
-              <div class="report-card-value">${noNext}</div>
-              <div class="report-card-note">Máquinas sem data planejada</div>
-            </div>
-          </div>
-        `;
-        return;
-      }
-
-      if (type === "pending") {
-        const overdue = data.overdue ?? 0;
-        const dueSoon = data.due_soon ?? 0;
-        const totalPending = data.total_pending ?? 0;
-        visual.innerHTML = `
-          <div class="report-grid">
-            <div class="report-card">
-              <div class="report-card-label">Data de corte</div>
-              <div class="report-card-value">${data.until || '-'}</div>
-              <div class="report-card-note">Considerando preventivas até esta data</div>
+              <div class="report-card-note">Todos os registros cadastrados</div>
             </div>
             <div class="report-card">
               <div class="report-card-label">Preventivas vencidas</div>
-              <div class="report-card-value" style="color:var(--danger);">${overdue}</div>
-              <div class="report-card-note">Já deveriam ter sido realizadas</div>
+              <div class="report-card-value">${overdue}</div>
+              <div class="report-card-note">Computadores com preventiva atrasada</div>
             </div>
             <div class="report-card">
-              <div class="report-card-label">A vencer até a data</div>
-              <div class="report-card-value" style="color:var(--accent-strong);">${dueSoon}</div>
-              <div class="report-card-note">Ainda dentro do prazo</div>
+              <div class="report-card-label">Pendentes</div>
+              <div class="report-card-value">${pending}</div>
+              <div class="report-card-note">Sem registro de última preventiva</div>
             </div>
             <div class="report-card">
-              <div class="report-card-label">Total pendente</div>
-              <div class="report-card-value">${totalPending}</div>
-              <div class="report-card-note">Soma de vencidas + a vencer</div>
+              <div class="report-card-label">Próx. 30 dias</div>
+              <div class="report-card-value">${next30}</div>
+              <div class="report-card-note">Preventivas agendadas nos próximos 30 dias</div>
+            </div>
+            <div class="report-card">
+              <div class="report-card-label">Sem próxima preventiva</div>
+              <div class="report-card-value">${noNext}</div>
+              <div class="report-card-note">Computadores sem data futura definida</div>
             </div>
           </div>
         `;
-        return;
-      }
-
-      if (type === "by-location" || type === "by-os" || type === "by-manufacturer") {
-        const arr = Array.isArray(data) ? data : [];
-        if (arr.length === 0) {
-          visual.innerHTML = '<div style="font-size:12px; color:var(--text-soft);">Nenhum dado encontrado.</div>';
-          return;
-        }
-        const values = arr.map(a => a.total ?? a._count?._all ?? 0);
-        const max = Math.max(...values, 1);
-
-        let titleLabel = "";
-        let fieldKey = "";
-        if (type === "by-location") {
-          titleLabel = "Localização";
-          fieldKey = "location";
-        } else if (type === "by-os") {
-          titleLabel = "Sistema operacional";
-          fieldKey = "os";
-        } else {
-          titleLabel = "Fabricante";
-          fieldKey = "manufacturer";
-        }
-
-        const bars = arr.map(row => {
-          const label = row[fieldKey] || "Não informado";
-          const val = row.total ?? row._count?._all ?? 0;
-          const perc = Math.round((val / max) * 100);
-          return `
-            <div class="bar-row">
-              <div class="bar-label" title="${label}">${label}</div>
-              <div class="bar-track">
-                <div class="bar-fill" style="width:${perc}%;"></div>
-              </div>
-              <div class="bar-value">${val}</div>
-            </div>
-          `;
-        }).join('');
-
-        visual.innerHTML = `
-          <div style="font-size:12px; color:var(--text-soft); margin-bottom:4px;">
-            Top ${arr.length} agrupado por <strong>${titleLabel}</strong>.
-          </div>
-          <div>
-            ${bars}
-          </div>
-        `;
-        return;
-      }
-
-      if (type === "no-next-date") {
-        const total = data.total ?? (data.data ? data.data.length : 0);
-        const list = Array.isArray(data.data) ? data.data : [];
-        const first = list.slice(0, 30);
-
-        const rows = first.map(c => `
-          <tr>
-            <td>${c.id}</td>
-            <td>${c.name}</td>
-            <td>${c.location || ""}</td>
-            <td>${c.os || ""}</td>
-            <td>${c.manufacturer || ""}</td>
-            <td>${c.serialNumber || ""}</td>
-          </tr>
-        `).join('');
-
-        visual.innerHTML = `
-          <div class="report-card">
-            <div class="report-card-label">Máquinas sem próxima preventiva</div>
-            <div class="report-card-value">${total}</div>
-            <div class="report-card-note">
-              Listando abaixo até 30 registros para visualização rápida.
-            </div>
-          </div>
+      } else if (type === "pending" || type === "no-next-date") {
+        const items = data.items || data.computers || [];
+        container.innerHTML = `
           <div class="report-table-wrapper">
             <table>
               <thead>
                 <tr>
-                  <th style="width:50px;">ID</th>
+                  <th>ID</th>
                   <th>Nome</th>
                   <th>Localização</th>
                   <th>SO</th>
-                  <th>Fabricante</th>
-                  <th>Nº Série</th>
+                  <th>Última</th>
+                  <th>Próxima</th>
                 </tr>
               </thead>
               <tbody>
-                ${rows}
+                ${items.map(c => `
+                  <tr>
+                    <td>${c.id}</td>
+                    <td>${c.nome || ""}</td>
+                    <td>${c.localizacao || ""}</td>
+                    <td>${c.sistemaOperacional || ""}</td>
+                    <td>${c.dataUltimaPreventiva ? formatDateBr(c.dataUltimaPreventiva) : ""}</td>
+                    <td>${c.dataProximaPreventiva ? formatDateBr(c.dataProximaPreventiva) : ""}</td>
+                  </tr>
+                `).join("")}
               </tbody>
             </table>
+          </div>
+        `;
+      } else if (type === "by-location" || type === "by-os" || type === "by-manufacturer") {
+        const field = type === "by-location" ? "local" : (type === "by-os" ? "os" : "fabricante");
+        const arr = data.items || data.data || [];
+        container.innerHTML = `
+          <div>
+            ${arr.map(item => {
+              const label = item[field] || "N/D";
+              const value = item.count || 0;
+              return `
+                <div class="bar-row">
+                  <div class="bar-label">${label}</div>
+                  <div class="bar-track">
+                    <div class="bar-fill" style="width:100%;"></div>
+                  </div>
+                  <div class="bar-value">${value}</div>
+                </div>
+              `;
+            }).join("")}
+          </div>
+        `;
+      } else {
+        container.innerHTML = `
+          <div style="font-size:12px; color:var(--text-soft);">
+            Tipo de relatório ainda não possui visualização específica. Veja o JSON.
+          </div>
+        `;
+      }
+    }
+
+    function exportReportPdf() {
+      if (!lastReportJson) {
+        showToast("Gere um relatório antes de exportar.", "error");
+        return;
+      }
+
+      const type = lastReportType || "relatorio";
+      const htmlContent = `
+        <html>
+        <head>
+          <title>Relatório - ${type}</title>
+          <meta charset="UTF-8" />
+          <style>
+            body {
+              font-family: system-ui, sans-serif;
+              padding: 20px;
+            }
+            h1 {
+              font-size: 20px;
+              margin-bottom: 10px;
+            }
+            h2 {
+              font-size: 14px;
+              margin-top: 20px;
+              margin-bottom: 8px;
+            }
+            table {
+              border-collapse: collapse;
+              width: 100%;
+              font-size: 11px;
+            }
+            th, td {
+              border: 1px solid #333;
+              padding: 4px 6px;
+            }
+          </style>
+        </head>
+        <body>
+          <h1>Sistema de Preventiva - Relatório (${type})</h1>
+          <h2>Resumo visual</h2>
+          ${document.getElementById("reportVisual").innerHTML}
+          <h2>JSON bruto</h2>
+          <pre>${JSON.stringify(lastReportJson, null, 2)}</pre>
+        </body>
+        </html>
+      `;
+
+      const win = window.open("", "_blank");
+      if (!win) {
+        showToast("Popup bloqueado. Permita popups para exportar PDF.", "error");
+        return;
+      }
+      win.document.open();
+      win.document.write(htmlContent);
+      win.document.close();
+      win.focus();
+      win.print();
+    }
+
+    // ============ USUÁRIOS ===================================
+
+    async function loadUsers() {
+      if (!token) return;
+      try {
+        const res = await fetch(API_BASE + "/users", {
+          headers: { Authorization: "Bearer " + token }
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          console.error("Erro loadUsers:", data);
+          showToast(data.message || "Erro ao carregar usuários", "error");
+          return;
+        }
+        users = data.users || data;
+        renderUsersTable();
+      } catch (err) {
+        console.error(err);
+        showToast("Erro ao conectar ao servidor ao carregar usuários.", "error");
+      }
+    }
+
+    function renderUsersTable() {
+      const tbody = document.getElementById("usersTableBody");
+      tbody.innerHTML = "";
+
+      users.forEach(u => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td><input type="checkbox" class="userCheck" data-id="${u.id}"></td>
+          <td>${u.id}</td>
+          <td>${u.name || ""}</td>
+          <td>${u.email || ""}</td>
+          <td>${u.role || ""}</td>
+          <td>${u.createdAt ? new Date(u.createdAt).toLocaleString("pt-BR") : ""}</td>
+          <td>
+            <button class="btn-sm" onclick="startEditUser(${u.id})">Editar</button>
+            <button class="btn-sm btn-sm-danger" onclick="deleteUser(${u.id})">Remover</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      document.getElementById("countUsersSelected").innerText = "0";
+      const all = document.getElementById("selectAllUsers");
+      if (all) all.checked = false;
+
+      document.querySelectorAll(".userCheck").forEach(chk => {
+        chk.addEventListener("change", () => {
+          const count = Array.from(document.querySelectorAll(".userCheck"))
+            .filter(c => c.checked).length;
+          document.getElementById("countUsersSelected").innerText = count;
+        });
+      });
+    }
+
+    function toggleSelectAllUsers(checkbox) {
+      const checked = checkbox.checked;
+      document.querySelectorAll(".userCheck").forEach(c => {
+        c.checked = checked;
+      });
+      const count = checked ? document.querySelectorAll(".userCheck").length : 0;
+      document.getElementById("countUsersSelected").innerText = count;
+    }
+
+    async function deleteSelectedUsers() {
+      if (!token) return;
+
+      const ids = Array.from(document.querySelectorAll(".userCheck"))
+        .filter(c => c.checked)
+        .map(c => c.getAttribute("data-id"));
+
+      if (!ids.length) {
+        showToast("Nenhum usuário selecionado.", "error");
+        return;
+      }
+
+      if (!confirm("Deseja realmente remover os usuários selecionados?")) return;
+
+      try {
+        const res = await fetch(API_BASE + "/users/bulk-delete", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "Bearer " + token
+          },
+          body: JSON.stringify({ ids })
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          console.error("Erro deleteSelectedUsers:", data);
+          showToast(data.message || "Erro ao remover usuários", "error");
+          return;
+        }
+        showToast("Usuários removidos com sucesso.");
+        loadUsers();
+      } catch (err) {
+        console.error(err);
+        showToast("Erro de conexão ao remover usuários", "error");
+      }
+    }
+
+    async function deleteUser(id) {
+      if (!token) return;
+      if (!confirm("Deseja realmente remover este usuário?")) return;
+      try {
+        const res = await fetch(API_BASE + "/users/" + id, {
+          method: "DELETE",
+          headers: {
+            Authorization: "Bearer " + token
+          }
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          console.error("Erro deleteUser:", data);
+          showToast(data.message || "Erro ao remover usuário", "error");
+          return;
+        }
+        showToast("Usuário removido com sucesso.");
+        loadUsers();
+      } catch (err) {
+        console.error(err);
+        showToast("Erro de conexão ao remover usuário", "error");
+      }
+    }
+
+    function startEditUser(id) {
+      const user = users.find(u => u.id === id);
+      if (!user) return;
+
+      editingUserId = id;
+      document.getElementById("uName").value = user.name || "";
+      document.getElementById("uEmail").value = user.email || "";
+      document.getElementById("uPassword").value = "";
+      document.getElementById("uRole").value = user.role || "USER";
+
+      document.getElementById("userFormSubmitBtn").textContent = "Salvar edição";
+      document.getElementById("userFormCancelEditBtn").style.display = "inline-block";
+      document.getElementById("userMessage").textContent = "Editando usuário ID " + id;
+    }
+
+    function cancelEditUser() {
+      editingUserId = null;
+      document.getElementById("uName").value = "";
+      document.getElementById("uEmail").value = "";
+      document.getElementById("uPassword").value = "";
+      document.getElementById("uRole").value = "USER";
+      document.getElementById("userFormSubmitBtn").textContent = "Criar usuário";
+      document.getElementById("userFormCancelEditBtn").style.display = "none";
+      document.getElementById("userMessage").textContent = "";
+    }
+
+    async function submitUserForm() {
+      if (!token) return;
+
+      const name = document.getElementById("uName").value.trim();
+      const email = document.getElementById("uEmail").value.trim();
+      const password = document.getElementById("uPassword").value.trim();
+      const role = document.getElementById("uRole").value;
+      const msgEl = document.getElementById("userMessage");
+
+      if (!name || !email || (!editingUserId && !password)) {
+        showToast("Nome, email e senha (para novo usuário) são obrigatórios.", "error");
+        return;
+      }
+
+      const payload = { name, email, role };
+      if (password) payload.password = password;
+
+      const isEdit = !!editingUserId;
+      const url = isEdit ? (API_BASE + "/users/" + editingUserId) : (API_BASE + "/users");
+      const method = isEdit ? "PUT" : "POST";
+
+      try {
+        const res = await fetch(url, {
+          method,
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "Bearer " + token
+          },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          console.error("Erro submitUserForm:", data);
+          showToast(data.message || "Erro ao salvar usuário", "error");
+          msgEl.textContent = data.message || "Erro ao salvar.";
+          return;
+        }
+
+        showToast(isEdit ? "Usuário atualizado com sucesso." : "Usuário criado com sucesso.");
+        msgEl.textContent = isEdit ? "Usuário atualizado." : "Usuário criado.";
+        cancelEditUser();
+        loadUsers();
+      } catch (err) {
+        console.error(err);
+        showToast("Erro de conexão ao salvar usuário", "error");
+        msgEl.textContent = "Erro de conexão.";
+      }
+    }
+
+    // ============ CALENDÁRIO DE PREVENTIVAS ==================
+
+    function initCalendarYearIfNeeded() {
+      const input = document.getElementById("calYear");
+      if (!input) return;
+      if (!input.value) {
+        input.value = new Date().getFullYear();
+      }
+    }
+
+    async function loadPreventiveCalendar() {
+      if (!token) return;
+
+      const yearInput = document.getElementById("calYear");
+      let year = parseInt(yearInput.value, 10);
+      if (isNaN(year)) {
+        year = new Date().getFullYear();
+        yearInput.value = year;
+      }
+
+      try {
+        const params = new URLSearchParams();
+        params.append("type", "calendar");
+        params.append("year", String(year));
+
+        const res = await fetch(API_BASE + "/reports?" + params.toString(), {
+          headers: { Authorization: "Bearer " + token }
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          console.error("Erro loadPreventiveCalendar:", data);
+          showToast(data.message || "Erro ao carregar calendário", "error");
+          return;
+        }
+
+        calendarData = data;
+        renderCalendar(year, data);
+        showToast("Calendário carregado.");
+      } catch (err) {
+        console.error(err);
+        showToast("Erro de conexão ao carregar calendário", "error");
+      }
+    }
+
+    function renderCalendar(year, data) {
+      const summaryEl = document.getElementById("calendarSummary");
+      const monthsEl = document.getElementById("calendarMonths");
+
+      const months = data.months || [];
+      const totalItems = data.total ?? months.reduce((acc, m) => acc + (m.total || 0), 0);
+
+      summaryEl.innerHTML = `
+        <strong>Ano ${year}</strong> &mdash;
+        ${totalItems} preventiva(s) registradas em ${months.filter(m => (m.total || 0) > 0).length} mês(es).
+      `;
+
+      if (!months.length) {
+        monthsEl.innerHTML = `
+          <div style="font-size:12px; color:var(--text-soft);">
+            Nenhum dado encontrado para este ano.
           </div>
         `;
         return;
       }
 
-      // fallback
-      visual.innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+      const monthNames = [
+        "Janeiro","Fevereiro","Março","Abril","Maio","Junho",
+        "Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"
+      ];
+
+      monthsEl.innerHTML = months.map(m => {
+        const idx = (m.month ?? m.mes ?? 1) - 1;
+        const name = monthNames[idx] || "Mês " + (idx + 1);
+        const total = m.total ?? (m.items ? m.items.length : 0);
+        const overdue = m.overdue ?? m.vencidas ?? 0;
+        const dueSoon = m.dueSoon ?? m.proximas ?? 0;
+        const items = m.items || [];
+
+        const itemsHtml = items.length
+          ? items.map(item => {
+              const d = item.date || item.dataProximaPreventiva;
+              const label = item.nome || item.name || "Computador";
+              const loc = item.localizacao || item.location || "";
+              return `
+                <div class="calendar-day-row">
+                  <div>
+                    <strong>${d ? formatDateBr(d) : "N/D"}</strong> — ${label}
+                  </div>
+                  <div class="calendar-day-right">
+                    ${loc}
+                  </div>
+                </div>
+              `;
+            }).join("")
+          : `<div style="font-size:11px; color:var(--text-soft);">Nenhuma preventiva neste mês.</div>`;
+
+        return `
+          <div class="calendar-month-card">
+            <div class="calendar-month-header">
+              <div class="calendar-month-title">${name}</div>
+              <div class="calendar-month-badges">
+                <span class="chip">Total: ${total}</span>
+                <span class="chip">Vencidas: ${overdue}</span>
+                <span class="chip">Próx.: ${dueSoon}</span>
+              </div>
+            </div>
+            <div>
+              ${itemsHtml}
+            </div>
+          </div>
+        `;
+      }).join("");
     }
+
+    // ============ INICIALIZAÇÃO ==============================
+
+    document.addEventListener("DOMContentLoaded", () => {
+      // Fica só aguardando login manual.
+    });
   </script>
-</body>
-</html>
 </body>
 </html>
