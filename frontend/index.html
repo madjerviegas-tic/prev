@@ -1310,1029 +1310,191 @@
     }
 
     // ====== DASHBOARD ======
-    async function loadDashboardStats() {
-            if (!token) return;
-          
-            const today = todayIsoDate();
-          
-            // 1) Total de computadores (mantém sua lógica atual usando paginação)
-            try {
-              const resComputers = await fetch(API_BASE + "/computers?page=1&pageSize=1", {
-                headers: { Authorization: "Bearer " + token }
-              });
-              const dataComputers = await resComputers.json();
-              if (resComputers.ok) {
-                document.getElementById('dashTotalComputers').innerText = dataComputers.total ?? '0';
-              } else {
-                document.getElementById('dashTotalComputers').innerText = '–';
-              }
-            } catch (err) {
-              console.error("Erro ao carregar total de computadores:", err);
-              const el = document.getElementById('dashTotalComputers');
-              if (el) el.innerText = '–';
-            }
-          
-            // 2) Carregar uma lista maior de computadores para calcular os indicadores
-            try {
-              // aqui eu assumo que o endpoint de lista é o mesmo, só mudando pageSize
-              const resList = await fetch(API_BASE + "/computers?page=1&pageSize=1000", {
-                headers: { Authorization: "Bearer " + token }
-              });
-              const dataList = await resList.json();
-          
-              if (!resList.ok) {
-                console.error("Erro ao carregar lista de computadores para dashboard:", dataList);
-                setDashboardStatsFallback();
-                return;
-              }
-          
-              // tenta descobrir onde está o array de computadores:
-              // pode ser dataList.items, dataList.computers ou o próprio dataList
-              let list = [];
-              if (Array.isArray(dataList.items)) list = dataList.items;
-              else if (Array.isArray(dataList.computers)) list = dataList.computers;
-              else if (Array.isArray(dataList)) list = dataList;
-          
-              updateDashboardFromComputers(list);
-            } catch (err) {
-              console.error("Erro de rede ao carregar lista de computadores para dashboard:", err);
-              setDashboardStatsFallback();
-            }
-          }
-          
-          // se der erro, coloca apenas traços nos cards secundários
-          function setDashboardStatsFallback() {
-            const elOverdue = document.getElementById('dashOverdue');
-            const elNext30 = document.getElementById('dashNext30');
-            const elNoNext = document.getElementById('dashNoNext');
-          
-            if (elOverdue) elOverdue.innerText = '–';
-            if (elNext30) elNext30.innerText = '–';
-            if (elNoNext) elNoNext.innerText = '–';
-          }
-          
-          // calcula atrasadas / próximas30 / sem data
-          function updateDashboardFromComputers(list) {
-            const now = new Date();
-            const nowTime = now.getTime();
-            const in30 = new Date();
-            in30.setDate(in30.getDate() + 30);
-            const in30Time = in30.getTime();
-          
-            let overdue = 0;
-            let next30 = 0;
-            let noNext = 0;
-          
-            if (!Array.isArray(list)) list = [];
-          
-            list.forEach(pc => {
-              // aqui uso o nome camelCase que normalmente sai do backend que montamos:
-              const next = pc.nextPreventiveDate;
-          
-              if (!next) {
-                noNext++;
-                return;
-              }
-          
-              const dt = new Date(next);
-              if (isNaN(dt.getTime())) {
-                noNext++;
-                return;
-              }
-          
-              const t = dt.getTime();
-              if (t < nowTime) {
-                overdue++;
-              } else if (t >= nowTime && t <= in30Time) {
-                next30++;
-              }
-            });
-          
-            const elOverdue = document.getElementById('dashOverdue');
-            const elNext30 = document.getElementById('dashNext30');
-            const elNoNext = document.getElementById('dashNoNext');
-          
-            if (elOverdue) elOverdue.innerText = overdue;
-            if (elNext30) elNext30.innerText = next30;
-            if (elNoNext) elNoNext.innerText = noNext;
-          }
+async function loadDashboardStats() {
+  if (!token) return;
 
+  const today = todayIsoDate();
 
-      // Preventivas pendentes
-      try {
-        const params = new URLSearchParams();
-        params.append('until', today);
-        const resPending = await fetch(API_BASE + "/reports/preventives-pending?" + params.toString(), {
-          headers: { Authorization: "Bearer " + token }
-        });
-        const dataPending = await resPending.json();
-        if (resPending.ok) {
-          document.getElementById('dashOverdue').innerText = dataPending.overdue ?? 0;
-          document.getElementById('dashDueSoon').innerText = dataPending.due_soon ?? 0;
-        } else {
-          document.getElementById('dashOverdue').innerText = '–';
-          document.getElementById('dashDueSoon').innerText = '–';
-        }
-      } catch (err) {
-        console.error(err);
-        document.getElementById('dashOverdue').innerText = '–';
-        document.getElementById('dashDueSoon').innerText = '–';
-      }
+  // 1) Total de computadores
+  try {
+    const resComputers = await fetch(API_BASE + "/computers?page=1&pageSize=1", {
+      headers: { Authorization: "Bearer " + token }
+    });
+    const dataComputers = await resComputers.json();
+    const elTotal = document.getElementById('dashTotalComputers');
+    if (resComputers.ok) {
+      if (elTotal) elTotal.innerText = dataComputers.total ?? '0';
+    } else {
+      if (elTotal) elTotal.innerText = '–';
+    }
+  } catch (err) {
+    console.error("Erro ao carregar total de computadores:", err);
+    const elTotal = document.getElementById('dashTotalComputers');
+    if (elTotal) elTotal.innerText = '–';
+  }
 
-      // Distribuição por localização
-      try {
-        const resLoc = await fetch(API_BASE + "/reports/by-location", {
-          headers: { Authorization: "Bearer " + token }
-        });
-        const dataLoc = await resLoc.json();
-        const cont = document.getElementById('dashByLocation');
-        if (resLoc.ok && Array.isArray(dataLoc) && dataLoc.length > 0) {
-          const top3 = dataLoc
-            .filter(r => r.location)
-            .sort((a,b) => b.total - a.total)
-            .slice(0, 3);
+  // 2) Lista de computadores para calcular "próximos 30 dias" e "sem próxima preventiva"
+  try {
+    const resList = await fetch(API_BASE + "/computers?page=1&pageSize=10000", {
+      headers: { Authorization: "Bearer " + token }
+    });
+    const dataList = await resList.json();
 
-          if (top3.length === 0) {
-            cont.innerHTML = '<div style="font-size:12px; color:var(--text-soft);">Nenhuma localização cadastrada.</div>';
-          } else {
-            cont.innerHTML = top3.map(r => `
-              <div style="display:flex; justify-content:space-between; align-items:center; font-size:12px; padding:4px 0;">
-                <span>${r.location}</span>
-                <span style="color:var(--accent-strong); font-weight:500;">${r.total}</span>
-              </div>
-            `).join('');
-          }
-        } else {
-          cont.innerHTML = '<div style="font-size:12px; color:var(--text-soft);">Nenhum dado de localização.</div>';
-        }
-      } catch (err) {
-        console.error(err);
-        document.getElementById('dashByLocation').innerHTML =
-          '<div style="font-size:12px; color:var(--text-soft);">Erro ao carregar distribuição.</div>';
-      }
+    if (!resList.ok) {
+      console.error("Erro ao carregar lista de computadores:", dataList);
+      setDashboardStatsFallback();
+    } else {
+      let list = [];
+      if (Array.isArray(dataList.items)) list = dataList.items;
+      else if (Array.isArray(dataList.computers)) list = dataList.computers;
+      else if (Array.isArray(dataList)) list = dataList;
 
-      // Distribuição por sistema operacional
-      try {
-        const resOs = await fetch(API_BASE + "/reports/by-os", {
-          headers: { Authorization: "Bearer " + token }
-        });
-        const dataOs = await resOs.json();
-        const cont = document.getElementById('dashByOs');
-        if (resOs.ok && Array.isArray(dataOs) && dataOs.length > 0) {
-          const top3 = dataOs
-            .filter(r => r.os)
-            .sort((a,b) => b.total - a.total)
-            .slice(0, 3);
+      updateDashboardFromComputers(list);
+    }
+  } catch (err) {
+    console.error("Erro de rede ao carregar lista de computadores:", err);
+    setDashboardStatsFallback();
+  }
 
-          if (top3.length === 0) {
-            cont.innerHTML = '<div style="font-size:12px; color:var(--text-soft);">Nenhum sistema operacional cadastrado.</div>';
-          } else {
-            cont.innerHTML = top3.map(r => `
-              <div style="display:flex; justify-content:space-between; align-items:center; font-size:12px; padding:4px 0;">
-                <span>${r.os}</span>
-                <span style="color:var(--accent-strong); font-weight:500;">${r.total}</span>
-              </div>
-            `).join('');
-          }
-        } else {
-          cont.innerHTML = '<div style="font-size:12px; color:var(--text-soft);">Nenhum dado de SO.</div>';
-        }
-      } catch (err) {
-        console.error(err);
-        document.getElementById('dashByOs').innerHTML =
-          '<div style="font-size:12px; color:var(--text-soft);">Erro ao carregar distribuição.</div>';
-      }
+  // 3) Preventivas pendentes (vencidas e a vencer até hoje)
+  // (se o backend não tiver esse endpoint, isso não quebra o sistema)
+  try {
+    const params = new URLSearchParams();
+    params.append('until', today);
+
+    const resPending = await fetch(API_BASE + "/reports/preventives-pending?" + params.toString(), {
+      headers: { Authorization: "Bearer " + token }
+    });
+    const dataPending = await resPending.json();
+
+    const elOverdue = document.getElementById('dashOverdue');
+    const elDueSoon = document.getElementById('dashDueSoon');
+
+    if (resPending.ok) {
+      if (elOverdue) elOverdue.innerText = dataPending.overdue ?? 0;
+      if (elDueSoon) elDueSoon.innerText = dataPending.due_soon ?? 0;
+    } else {
+      if (elOverdue) elOverdue.innerText = '–';
+      if (elDueSoon) elDueSoon.innerText = '–';
+    }
+  } catch (err) {
+    console.error("Erro ao carregar pendências:", err);
+    const elOverdue = document.getElementById('dashOverdue');
+    const elDueSoon = document.getElementById('dashDueSoon');
+    if (elOverdue) elOverdue.innerText = '–';
+    if (elDueSoon) elDueSoon.innerText = '–';
+  }
+
+  // 4) Distribuição por localização (top 3)
+  try {
+    const resLoc = await fetch(API_BASE + "/reports/by-location", {
+      headers: { Authorization: "Bearer " + token }
+    });
+    const dataLoc = await resLoc.json();
+    const cont = document.getElementById('dashByLocation');
+
+    if (!cont) return;
+
+    if (resLoc.ok && Array.isArray(dataLoc) && dataLoc.length > 0) {
+      const top3 = dataLoc
+        .filter(r => r.location)
+        .sort((a, b) => (b.total ?? 0) - (a.total ?? 0))
+        .slice(0, 3);
+
+      cont.innerHTML = top3.length
+        ? top3.map(r => `
+            <div style="display:flex; justify-content:space-between; align-items:center; font-size:12px; padding:4px 0;">
+              <span>${r.location}</span>
+              <span style="color:var(--accent-strong); font-weight:500;">${r.total ?? 0}</span>
+            </div>
+          `).join('')
+        : '<div style="font-size:12px; color:var(--text-soft);">Nenhuma localização cadastrada.</div>';
+    } else {
+      cont.innerHTML = '<div style="font-size:12px; color:var(--text-soft);">Nenhum dado de localização.</div>';
+    }
+  } catch (err) {
+    console.error(err);
+    const cont = document.getElementById('dashByLocation');
+    if (cont) cont.innerHTML = '<div style="font-size:12px; color:var(--text-soft);">Erro ao carregar localização.</div>';
+  }
+
+  // 5) Distribuição por SO (top 3)
+  try {
+    const resOs = await fetch(API_BASE + "/reports/by-os", {
+      headers: { Authorization: "Bearer " + token }
+    });
+    const dataOs = await resOs.json();
+    const cont = document.getElementById('dashByOs');
+
+    if (!cont) return;
+
+    if (resOs.ok && Array.isArray(dataOs) && dataOs.length > 0) {
+      const top3 = dataOs
+        .filter(r => r.os)
+        .sort((a, b) => (b.total ?? 0) - (a.total ?? 0))
+        .slice(0, 3);
+
+      cont.innerHTML = top3.length
+        ? top3.map(r => `
+            <div style="display:flex; justify-content:space-between; align-items:center; font-size:12px; padding:4px 0;">
+              <span>${r.os}</span>
+              <span style="color:var(--accent-strong); font-weight:500;">${r.total ?? 0}</span>
+            </div>
+          `).join('')
+        : '<div style="font-size:12px; color:var(--text-soft);">Nenhum SO cadastrado.</div>';
+    } else {
+      cont.innerHTML = '<div style="font-size:12px; color:var(--text-soft);">Nenhum dado de SO.</div>';
+    }
+  } catch (err) {
+    console.error(err);
+    const cont = document.getElementById('dashByOs');
+    if (cont) cont.innerHTML = '<div style="font-size:12px; color:var(--text-soft);">Erro ao carregar SO.</div>';
+  }
+}
+
+function setDashboardStatsFallback() {
+  const elNext30 = document.getElementById('dashNext30');
+  const elNoNext = document.getElementById('dashNoNext');
+  if (elNext30) elNext30.innerText = '–';
+  if (elNoNext) elNoNext.innerText = '–';
+}
+
+function updateDashboardFromComputers(list) {
+  const now = new Date();
+  const nowTime = now.getTime();
+  const in30 = new Date();
+  in30.setDate(in30.getDate() + 30);
+  const in30Time = in30.getTime();
+
+  let next30 = 0;
+  let noNext = 0;
+
+  if (!Array.isArray(list)) list = [];
+
+  list.forEach(pc => {
+    const next = pc.nextPreventiveDate || pc.dataProximaPreventiva || pc.next_preventive_date;
+
+    if (!next) {
+      noNext++;
+      return;
     }
 
-    // ====== CALENDÁRIO ANUAL DE PREVENTIVAS ======
-
-          async function loadPreventiveCalendar() {
-            if (!token) {
-              showToast("Faça login para visualizar o calendário.", "error");
-              return;
-            }
-
-            const yearInput = document.getElementById('calYear');
-            let year = parseInt(yearInput.value, 10);
-
-            if (isNaN(year)) {
-              year = new Date().getFullYear();
-              yearInput.value = year;
-            }
-
-            // Calendário calculado no FRONT usando a lista de computadores
-            // (não depende de rota /api/calendar no backend)
-            try {
-              const res = await fetch(API_BASE + "/computers?page=1&pageSize=10000", {
-                headers: { Authorization: "Bearer " + token }
-              });
-
-              // Se o backend retornar HTML (404), isso evita quebrar com res.json()
-              const text = await res.text();
-              let data;
-              try { data = JSON.parse(text); } catch { data = { raw: text }; }
-
-              if (!res.ok) {
-                console.error("Erro ao carregar computadores para calendário:", data);
-                showToast((data && data.message) ? data.message : "Erro ao carregar dados para o calendário.", "error");
-                return;
-              }
-
-              const list = Array.isArray(data.data) ? data.data
-                        : Array.isArray(data.items) ? data.items
-                        : Array.isArray(data.computers) ? data.computers
-                        : Array.isArray(data) ? data
-                        : [];
-
-              const byDay = {};
-              list.forEach(pc => {
-                const next = pc.nextPreventiveDate;
-                if (!next) return;
-
-                const iso = String(next).substring(0, 10); // YYYY-MM-DD
-                if (!/^\d{4}-\d{2}-\d{2}$/.test(iso)) return;
-
-                const y = parseInt(iso.slice(0, 4), 10);
-                if (y !== year) return;
-
-                if (!byDay[iso]) byDay[iso] = [];
-                byDay[iso].push({
-                  id: pc.id,
-                  name: pc.name || "Sem nome",
-                  location: pc.location || "",
-                  manufacturer: pc.manufacturer || "",
-                  nextPreventiveDate: iso
-                });
-              });
-
-              const days = Object.keys(byDay).sort().map(date => ({
-                date,
-                count: byDay[date].length,
-                computers: byDay[date]
-              }));
-
-              calendarData = {
-                year,
-                totalEvents: days.reduce((acc, d) => acc + d.count, 0),
-                totalDays: days.length,
-                days
-              };
-
-              renderPreventiveCalendar();
-            } catch (err) {
-              console.error("Erro de rede ao carregar calendário:", err);
-              showToast("Erro ao conectar ao servidor ao carregar calendário.", "error");
-            }
-          }
-
-          function renderPreventiveCalendar() {
-            if (!calendarData) return;
-
-            const { year, totalEvents, totalDays, days } = calendarData;
-
-            const summaryEl = document.getElementById('calendarSummary');
-            const monthsEl = document.getElementById('calendarMonths');
-
-            if (summaryEl) {
-              summaryEl.innerHTML = `
-                <div style="display:flex; flex-wrap:wrap; gap:8px;">
-                  <span class="chip">Ano: <strong>${year}</strong></span>
-                  <span class="chip">Preventivas no ano: <strong>${totalEvents}</strong></span>
-                  <span class="chip">Dias com agendamento: <strong>${totalDays}</strong></span>
-                </div>
-              `;
-            }
-
-            const byMonth = {};
-            (days || []).forEach(d => {
-              const m = parseInt(d.date.slice(5, 7), 10) - 1; // 0..11
-              if (!byMonth[m]) byMonth[m] = [];
-              byMonth[m].push(d);
-            });
-
-            const monthNames = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
-
-            if (monthsEl) {
-              monthsEl.innerHTML = "";
-
-              for (let m = 0; m < 12; m++) {
-                const monthDays = byMonth[m] || [];
-
-                const card = document.createElement('div');
-                card.className = 'card';
-
-                let itemsHtml = '';
-                if (monthDays.length === 0) {
-                  itemsHtml = `
-                    <div style="font-size:12px; color:var(--text-soft); padding:8px;">
-                      Nenhuma preventiva agendada neste mês.
-                    </div>
-                  `;
-                } else {
-                  itemsHtml = monthDays.map(d => {
-                    const dia = d.date.slice(8, 10);
-                    const mes = d.date.slice(5, 7);
-
-                    const listaMaquinas = (d.computers || [])
-                      .map(c => {
-                        const infoLoc = c.location ? ` - ${c.location}` : '';
-                        return `<li>${c.name || 'Sem nome'}${infoLoc}</li>`;
-                      })
-                      .join('');
-
-                    return `
-                      <div style="margin-bottom:8px;">
-                        <div style="font-weight:600; font-size:12px;">${dia}/${mes} - ${d.count} máquina(s)</div>
-                        <ul style="margin:2px 0 0 16px; font-size:11px; color:var(--text-soft);">
-                          ${listaMaquinas}
-                        </ul>
-                      </div>
-                    `;
-                  }).join('');
-                }
-
-                card.innerHTML = `
-                  <div class="card-header">
-                    <div>
-                      <div class="card-title">${monthNames[m]} / ${year}</div>
-                      <div class="card-subtitle">${monthDays.length} dia(s) com preventivas</div>
-                    </div>
-                  </div>
-                  <div class="card-body">
-                    ${itemsHtml}
-                  </div>
-                `;
-
-                monthsEl.appendChild(card);
-              }
-            }
-          }
-          
-            const byMonth = {};
-            days.forEach(d => {
-              const dateObj = new Date(d.date + 'T00:00:00');
-              const m = dateObj.getMonth(); // 0..11
-              if (!byMonth[m]) byMonth[m] = [];
-              byMonth[m].push(d);
-            });
-          
-            const monthNames = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
-          
-            if (monthsEl) {
-              monthsEl.innerHTML = '';
-          
-              for (let m = 0; m < 12; m++) {
-                const monthDays = byMonth[m] || [];
-                const card = document.createElement('div');
-                card.className = 'card';
-          
-                let itemsHtml = '';
-                if (monthDays.length === 0) {
-                  itemsHtml = `
-                    <div style="font-size:12px; color:var(--text-soft); padding:8px;">
-                      Nenhuma preventiva agendada neste mês.
-                    </div>
-                  `;
-                } else {
-                  itemsHtml = monthDays.map(d => {
-                    const dateObj = new Date(d.date + 'T00:00:00');
-                    const dia = String(dateObj.getDate()).padStart(2, '0');
-                    const mes = String(dateObj.getMonth() + 1).padStart(2, '0');
-          
-                    const listaMaquinas = d.computers
-                      .map(c => {
-                        const infoLoc = c.location ? ` - ${c.location}` : '';
-                        return `<li>${c.name || 'Sem nome'}${infoLoc}</li>`;
-                      })
-                      .join('');
-          
-                    return `
-                      <div style="margin-bottom:8px;">
-                        <div style="font-weight:600; font-size:12px;">${dia}/${mes} - ${d.count} máquina(s)</div>
-                        <ul style="margin:2px 0 0 16px; font-size:11px; color:var(--text-soft);">
-                          ${listaMaquinas}
-                        </ul>
-                      </div>
-                    `;
-                  }).join('');
-                }
-          
-                card.innerHTML = `
-                  <div class="card-header">
-                    <div>
-                      <div class="card-title">${monthNames[m]} / ${year}</div>
-                      <div class="card-subtitle">${monthDays.length} dia(s) com preventivas</div>
-                    </div>
-                  </div>
-                  <div class="card-body">
-                    ${itemsHtml}
-                  </div>
-                `;
-          
-                monthsEl.appendChild(card);
-              }
-            }
-          }
-
-
-      // ====== USUÁRIOS (ADMIN) ======
-
-          async function loadUsers() {
-            if (!token || !currentUser || currentUser.role !== 'ADMIN') return;
-          
-            try {
-              const res = await fetch(API_BASE + "/users", {
-                headers: { Authorization: "Bearer " + token }
-              });
-          
-              const text = await res.text();
-              let data;
-              try {
-                data = JSON.parse(text);
-              } catch (e) {
-                console.error("Resposta não é JSON em /users. Status:", res.status, "Body:", text);
-                showToast("Erro ao carregar usuários (resposta inválida do servidor).", "error");
-                return;
-              }
-          
-              if (!res.ok) {
-                console.error("Erro HTTP em /users:", res.status, data);
-                showToast(data.message || "Erro ao carregar usuários", "error");
-                return;
-              }
-          
-              users = data;
-              renderUsers();
-            } catch (err) {
-              console.error("Erro de rede/fetch em /users:", err);
-              showToast("Erro ao conectar ao servidor ao carregar usuários.", "error");
-            }
-          }
-          
-          function renderUsers() {
-              const tbody = document.getElementById('usersTableBody');
-              if (!tbody) return;
-            
-              tbody.innerHTML = "";
-            
-              if (!users || users.length === 0) {
-                tbody.innerHTML = `
-                  <tr>
-                    <td colspan="7" style="text-align:center; font-size:12px; color:var(--text-soft); padding:8px;">
-                      Nenhum usuário encontrado.
-                    </td>
-                  </tr>
-                `;
-                const el = document.getElementById('countUsersSelected');
-                if (el) el.innerText = "0";
-                return;
-              }
-            
-              users.forEach(u => {
-                const created = u.createdAt ? new Date(u.createdAt).toLocaleString() : "";
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                  <td><input type="checkbox" class="userRowCheck" data-id="${u.id}" /></td>
-                  <td>${u.id}</td>
-                  <td>${u.name}</td>
-                  <td>${u.email}</td>
-                  <td>${u.role}</td>
-                  <td>${created}</td>
-                  <td>
-                    <button class="btn-sm" onclick="startEditUser(${u.id})">Editar</button>
-                    <button class="btn-sm" onclick="resetPasswordUser(${u.id})">Redefinir senha</button>
-                  </td>
-                `;
-                tbody.appendChild(tr);
-              });
-            
-              document.querySelectorAll('.userRowCheck').forEach(chk => {
-                chk.addEventListener('change', updateUsersSelectedCount);
-              });
-              updateUsersSelectedCount();
-            }
-
-            function startEditUser(id) {
-              const user = users.find(u => u.id === id);
-              if (!user) {
-                showToast("Usuário não encontrado na lista carregada.", "error");
-                return;
-              }
-              fillUserForm(user);
-              setUserFormModeEdit(user);
-            }
-
-    function updateDashboardCards(computers) {
-      const now = new Date();
-      const nowTime = now.getTime();
-      const in30 = new Date();
-      in30.setDate(in30.getDate() + 30);
-      const in30Time = in30.getTime();
-    
-      let overdue = 0;
-      let next30 = 0;
-      let noNext = 0;
-    
-      computers.forEach(pc => {
-        const next = pc.nextPreventiveDate;
-    
-        if (!next) {
-          noNext++;
-          return;
-        }
-    
-        const dt = new Date(next);
-        if (isNaN(dt.getTime())) {
-          noNext++;
-          return;
-        }
-    
-        const t = dt.getTime();
-    
-        if (t < nowTime) overdue++;
-        else if (t <= in30Time) next30++;
-      });
-    
-      document.getElementById('dashTotalComputers').innerText = computers.length;
-      document.getElementById('dashOverdue').innerText = overdue;
-      document.getElementById('dashNext30').innerText = next30;
-      document.getElementById('dashNoNext').innerText = noNext;
+    const dt = new Date(next);
+    if (isNaN(dt.getTime())) {
+      noNext++;
+      return;
     }
 
-    
-          //Perto do bloco do usuario
-            function fillUserForm(user) {
-                document.getElementById('uName').value = user.name || "";
-                document.getElementById('uEmail').value = user.email || "";
-                document.getElementById('uRole').value = user.role || "USER";
-              
-                // senha só é usada na criação; deixamos em branco na edição
-                document.getElementById('uPassword').value = "";
-              }
-              
-              function setUserFormModeCreate() {
-                editingUserId = null;
-                const btn = document.getElementById('userFormSubmitBtn');
-                const cancelBtn = document.getElementById('userFormCancelEditBtn');
-                const msgEl = document.getElementById('userMessage');
-              
-                if (btn) btn.innerText = "Criar usuário";
-                if (cancelBtn) cancelBtn.style.display = "none";
-                if (msgEl) msgEl.innerText = "Crie um novo usuário do sistema.";
-              }
-              
-              function setUserFormModeEdit(user) {
-                editingUserId = user.id;
-                const btn = document.getElementById('userFormSubmitBtn');
-                const cancelBtn = document.getElementById('userFormCancelEditBtn');
-                const msgEl = document.getElementById('userMessage');
-              
-                if (btn) btn.innerText = `Salvar alterações (ID ${user.id})`;
-                if (cancelBtn) cancelBtn.style.display = "inline-flex";
-                if (msgEl) msgEl.innerText = "Editando usuário existente. A senha não é alterada aqui, use 'Redefinir senha'.";
-              }
-              
-              function cancelEditUser() {
-                setUserFormModeCreate();
-                document.getElementById('uName').value = "";
-                document.getElementById('uEmail').value = "";
-                document.getElementById('uPassword').value = "";
-                document.getElementById('uRole').value = "USER";
-              }
+    const t = dt.getTime();
+    if (t >= nowTime && t <= in30Time) next30++;
+  });
 
-          
-          function updateUsersSelectedCount() {
-            const count = Array.from(document.querySelectorAll('.userRowCheck'))
-              .filter(c => c.checked).length;
-            const el = document.getElementById('countUsersSelected');
-            if (el) el.innerText = count;
-          }
-          
-          function toggleSelectAllUsers(checkbox) {
-            const checks = document.querySelectorAll('.userRowCheck');
-            checks.forEach((c) => (c.checked = checkbox.checked));
-            updateUsersSelectedCount();
-          }
-          
-          async function submitUserForm() {
-          if (!token || !currentUser || currentUser.role !== 'ADMIN') {
-            showToast("Apenas ADMIN pode gerenciar usuários.", "error");
-            return;
-          }
-        
-          const name = document.getElementById('uName').value.trim();
-          const email = document.getElementById('uEmail').value.trim();
-          const password = document.getElementById('uPassword').value.trim();
-          const role = document.getElementById('uRole').value;
-          const msgEl = document.getElementById('userMessage');
-        
-          if (!name || !email || (!editingUserId && !password)) {
-            showToast(editingUserId ? "Preencha nome e email." : "Preencha nome, email e senha.", "error");
-            if (msgEl) msgEl.innerText = editingUserId
-              ? "Preencha nome e email."
-              : "Preencha nome, email e senha.";
-            return;
-          }
-        
-          try {
-            if (!editingUserId) {
-              // CRIAR
-              const res = await fetch(API_BASE + "/users", {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                  Authorization: "Bearer " + token
-                },
-                body: JSON.stringify({ name, email, password, role })
-              });
-              const data = await res.json();
-              if (!res.ok) {
-                showToast(data.message || "Erro ao criar usuário.", "error");
-                if (msgEl) msgEl.innerText = data.message || "Erro ao criar usuário.";
-                return;
-              }
-        
-              document.getElementById('uName').value = "";
-              document.getElementById('uEmail').value = "";
-              document.getElementById('uPassword').value = "";
-              document.getElementById('uRole').value = "USER";
-              if (msgEl) msgEl.innerText = "Usuário criado com sucesso.";
-        
-              showToast("Usuário criado com sucesso!", "success");
-              loadUsers();
-            } else {
-              // EDITAR
-              const res = await fetch(API_BASE + "/users/" + editingUserId, {
-                method: "PATCH",
-                headers: {
-                  "Content-Type": "application/json",
-                  Authorization: "Bearer " + token
-                },
-                body: JSON.stringify({ name, email, role })
-              });
-              const data = await res.json();
-              if (!res.ok) {
-                showToast(data.message || "Erro ao editar usuário.", "error");
-                if (msgEl) msgEl.innerText = data.message || "Erro ao editar usuário.";
-                return;
-              }
-        
-              showToast("Usuário atualizado com sucesso!", "success");
-              setUserFormModeCreate();
-              document.getElementById('uName').value = "";
-              document.getElementById('uEmail').value = "";
-              document.getElementById('uPassword').value = "";
-              document.getElementById('uRole').value = "USER";
-              if (msgEl) msgEl.innerText = "Usuário atualizado com sucesso.";
-        
-              loadUsers();
-            }
-          } catch (err) {
-            console.error(err);
-            if (msgEl) msgEl.innerText = "Erro ao conectar ao servidor.";
-            showToast("Erro ao conectar ao servidor.", "error");
-          }
-        }
-
-
-    //Reset Password
-
-    async function resetPasswordUser(id) {
-          if (!token || !currentUser || currentUser.role !== 'ADMIN') {
-            showToast("Apenas ADMIN pode redefinir senhas.", "error");
-            return;
-          }
-        
-          const user = users.find(u => u.id === id);
-          if (!user) {
-            showToast("Usuário não encontrado na lista carregada.", "error");
-            return;
-          }
-        
-          const novaSenha = window.prompt(`Digite a nova senha para o usuário ${user.name} (ID ${user.id}):`);
-          if (!novaSenha) {
-            return; // cancelado ou vazio
-          }
-          if (novaSenha.length < 4) {
-            showToast("Defina uma senha com pelo menos 4 caracteres.", "error");
-            return;
-          }
-        
-          try {
-            const res = await fetch(API_BASE + `/users/${id}/reset-password`, {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: "Bearer " + token
-              },
-              body: JSON.stringify({ newPassword: novaSenha })
-            });
-            const data = await res.json();
-            if (!res.ok) {
-              showToast(data.message || "Erro ao redefinir senha.", "error");
-              return;
-            }
-        
-            showToast("Senha redefinida com sucesso!", "success");
-          } catch (err) {
-            console.error("Erro ao redefinir senha:", err);
-            showToast("Erro ao conectar ao servidor ao redefinir senha.", "error");
-          }
-        }
-
-
-
-    
-
-    // ====== COMPUTADORES ======
-    function clearFilters() {
-      document.getElementById('fSearch').value = "";
-      document.getElementById('fLocation').value = "";
-      document.getElementById('fOs').value = "";
-      document.getElementById('fNextFrom').value = "";
-      document.getElementById('fNextTo').value = "";
-      const all = document.getElementById('fAll');
-      if (all) all.checked = false;
-      loadComputers();
-    }
-
-    async function loadComputers() {
-      if (!token) return;
-
-      const search = document.getElementById('fSearch').value;
-      const location = document.getElementById('fLocation').value;
-      const os = document.getElementById('fOs').value;
-      const next_from = document.getElementById('fNextFrom').value;
-      const next_to = document.getElementById('fNextTo').value;
-      const all = document.getElementById('fAll') ? document.getElementById('fAll').checked : false;
-
-      const params = new URLSearchParams();
-      if (search) params.append('search', search);
-      if (location) params.append('location', location);
-      if (os) params.append('os', os);
-      if (next_from) params.append('next_from', next_from);
-      if (next_to) params.append('next_to', next_to);
-
-      if (all) {
-        params.append('page', '1');
-        params.append('pageSize', '10000');
-      }
-
-      try {
-        const res = await fetch(API_BASE + "/computers?" + params.toString(), {
-          headers: { Authorization: "Bearer " + token }
-        });
-        const data = await res.json();
-        if (!res.ok) {
-          alert(data.message || "Erro ao carregar computadores");
-          showToast(data.message || "Erro ao carregar computadores", "error");
-          return;
-        }
-        computers = data.data;
-        renderComputers();
-
-        document.getElementById('statTotalComputers').innerText = data.total ?? computers.length;
-        document.getElementById('statNextFilter').innerText = (next_from || next_to) ? "Filtrado" : "Sem filtro";
-      } catch (err) {
-        console.error(err);
-        alert("Erro ao conectar ao servidor");
-        showToast("Erro ao conectar ao servidor", "error");
-      }
-    }
-
-    function renderComputers() {
-      const tbody = document.getElementById('computersTableBody');
-      tbody.innerHTML = "";
-      computers.forEach((c) => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td><input type="checkbox" class="rowCheck" data-id="${c.id}" /></td>
-          <td>${c.id}</td>
-          <td>${c.name}</td>
-          <td>${c.location || ""}</td>
-          <td>${c.os}</td>
-          <td>${c.lastPreventiveDate ? c.lastPreventiveDate.substring(0,10) : ""}</td>
-          <td>${c.nextPreventiveDate ? c.nextPreventiveDate.substring(0,10) : ""}</td>
-        `;
-        tbody.appendChild(tr);
-      });
-
-      document.querySelectorAll('.rowCheck').forEach(chk => {
-        chk.addEventListener('change', updateSelectedCount);
-      });
-      updateSelectedCount();
-    }
-
-    function toggleSelectAll(checkbox) {
-      const checks = document.querySelectorAll('.rowCheck');
-      checks.forEach((c) => (c.checked = checkbox.checked));
-      updateSelectedCount();
-    }
-
-    // CADASTRO MANUAL
-    async function createComputer() {
-      if (!token || !currentUser || currentUser.role !== 'ADMIN') {
-        showToast("Apenas ADMIN pode cadastrar computadores.", "error");
-        return;
-      }
-
-      const name = document.getElementById('newName').value.trim();
-      const manufacturer = document.getElementById('newManufacturer').value.trim();
-      const location = document.getElementById('newLocation').value.trim();
-      const serialNumber = document.getElementById('newSerial').value.trim();
-      const os = document.getElementById('newOs').value.trim();
-      const lastPreventiveDate = document.getElementById('newLast').value;
-      const nextPreventiveDate = document.getElementById('newNext').value;
-
-      if (!name || !location || !serialNumber || !os) {
-        showToast("Preencha os campos obrigatórios (*).", "error");
-        return;
-      }
-
-      try {
-        const res = await fetch(API_BASE + "/computers", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: "Bearer " + token
-          },
-          body: JSON.stringify({
-            name,
-            manufacturer: manufacturer || null,
-            location,
-            serialNumber,
-            os,
-            lastPreventiveDate: lastPreventiveDate || null,
-            nextPreventiveDate: nextPreventiveDate || null
-          })
-        });
-        const data = await res.json();
-        if (!res.ok) {
-          showToast(data.message || "Erro ao criar computador.", "error");
-          return;
-        }
-
-        document.getElementById('newName').value = "";
-        document.getElementById('newManufacturer').value = "";
-        document.getElementById('newLocation').value = "";
-        document.getElementById('newSerial').value = "";
-        document.getElementById('newOs').value = "";
-        document.getElementById('newLast').value = "";
-        document.getElementById('newNext').value = "";
-
-        showToast("Computador cadastrado com sucesso!", "success");
-        loadComputers();
-        loadDashboardStats();
-      } catch (err) {
-        console.error(err);
-        showToast("Erro ao conectar ao servidor.", "error");
-      }
-    }
-
-    // EXCLUSÃO
-    async function deleteSelected() {
-      if (!token || !currentUser || currentUser.role !== 'ADMIN') {
-        showToast("Apenas ADMIN pode excluir computadores.", "error");
-        return;
-      }
-
-      const ids = Array.from(document.querySelectorAll('.rowCheck'))
-        .filter((c) => c.checked)
-        .map((c) => Number(c.getAttribute('data-id')));
-
-      if (ids.length === 0) {
-        showToast("Selecione ao menos um computador para excluir.", "error");
-        return;
-      }
-
-      const confirma = window.confirm(
-        `Tem certeza que deseja excluir ${ids.length} computador(es)? Essa ação não pode ser desfeita.`
-      );
-      if (!confirma) return;
-
-      try {
-        for (const id of ids) {
-          await fetch(API_BASE + "/computers/" + id, {
-            method: "DELETE",
-            headers: { Authorization: "Bearer " + token }
-          });
-        }
-        showToast("Computadores excluídos com sucesso.", "success");
-        loadComputers();
-        loadDashboardStats();
-      } catch (err) {
-        console.error(err);
-        showToast("Erro ao excluir computadores.", "error");
-      }
-    }
-
-    // BULK UPDATE
-    async function bulkUpdate() {
-      if (!token || !currentUser || currentUser.role !== 'ADMIN') {
-        alert("Apenas ADMIN pode usar edição em massa.");
-        showToast("Apenas ADMIN pode usar edição em massa.", "error");
-        return;
-      }
-      const ids = Array.from(document.querySelectorAll('.rowCheck'))
-        .filter((c) => c.checked)
-        .map((c) => Number(c.getAttribute('data-id')));
-
-      if (ids.length === 0) {
-        alert("Selecione ao menos um computador.");
-        showToast("Selecione ao menos um computador.", "error");
-        return;
-      }
-
-      const fields = {};
-      const manufacturer = document.getElementById('bulkManufacturer').value;
-      const location = document.getElementById('bulkLocation').value;
-      const os = document.getElementById('bulkOs').value;
-      const last = document.getElementById('bulkLast').value;
-      const next = document.getElementById('bulkNext').value;
-
-      if (manufacturer) fields.manufacturer = manufacturer;
-      if (location) fields.location = location;
-      if (os) fields.os = os;
-      if (last) fields.lastPreventiveDate = last;
-      if (next) fields.nextPreventiveDate = next;
-
-      if (Object.keys(fields).length === 0) {
-        alert("Informe ao menos um campo para alterar.");
-        showToast("Informe ao menos um campo para alterar.", "error");
-        return;
-      }
-
-      const msgEl = document.getElementById('bulkMessage');
-      msgEl.innerText = "Aplicando alterações...";
-
-      try {
-        const res = await fetch(API_BASE + "/computers/bulk-update", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: "Bearer " + token
-          },
-          body: JSON.stringify({ ids, fields })
-        });
-        const data = await res.json();
-        if (!res.ok) {
-          msgEl.innerText = data.message || "Erro no bulk update";
-          showToast(data.message || "Erro no bulk update", "error");
-          return;
-        }
-        msgEl.innerText = "Registros atualizados: " + data.updated_count;
-        showToast("Edição em massa concluída!", "success");
-        loadComputers();
-        loadDashboardStats();
-      } catch (err) {
-        console.error(err);
-        msgEl.innerText = "Erro ao conectar ao servidor";
-        showToast("Erro ao conectar ao servidor", "error");
-      }
-    }
-
-    // IMPORTAÇÃO CSV
-    async function importCsv() {
-      if (!token || !currentUser || currentUser.role !== 'ADMIN') {
-        alert("Apenas ADMIN pode importar CSV.");
-        showToast("Apenas ADMIN pode importar CSV.", "error");
-        return;
-      }
-      const fileInput = document.getElementById('csvFile');
-      if (!fileInput.files[0]) {
-        alert("Selecione um arquivo CSV.");
-        showToast("Selecione um arquivo CSV.", "error");
-        return;
-      }
-      const formData = new FormData();
-      formData.append("file", fileInput.files[0]);
-      const resultEl = document.getElementById('importResult');
-      resultEl.innerText = "Importando...";
-
-      try {
-        const res = await fetch(API_BASE + "/import/import-csv", {
-          method: "POST",
-          headers: { Authorization: "Bearer " + token },
-          body: formData
-        });
-        const data = await res.json();
-        if (!res.ok) {
-          resultEl.innerText = data.message || "Erro na importação";
-          showToast(data.message || "Erro na importação", "error");
-          return;
-        }
-        resultEl.innerText = JSON.stringify(data, null, 2);
-        showToast("Importação concluída!", "success");
-        loadComputers();
-        loadDashboardStats();
-      } catch (err) {
-        console.error(err);
-        resultEl.innerText = "Erro ao conectar ao servidor";
-        showToast("Erro ao conectar ao servidor", "error");
-      }
-    }
-
-    // ====== RELATÓRIOS COM GRÁFICOS ======
+  const elNext30 = document.getElementById('dashNext30');
+  const elNoNext = document.getElementById('dashNoNext');
+  if (elNext30) elNext30.innerText = next30;
+  if (elNoNext) elNoNext.innerText = noNext;
+}
+// ====== RELATÓRIOS COM GRÁFICOS ======
 
     function toggleJson() {
       const container = document.getElementById('jsonContainer');
