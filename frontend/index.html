@@ -1351,6 +1351,7 @@
           else if (Array.isArray(dataList)) list = dataList;
 
           updateDashboardFromComputers(list);
+          updateDashboardDistributions(list);
         }
       } catch (err) {
         console.error(err);
@@ -1385,73 +1386,10 @@
         if (elDueSoon) elDueSoon.innerText = '–';
       }
 
-      // 4) Distribuição por localização (Top 3)
-      try {
-        const resLoc = await fetch(API_BASE + "/reports/by-location", {
-          headers: { Authorization: "Bearer " + token }
-        });
-        const dataLoc = await resLoc.json();
-        const cont = document.getElementById('dashByLocation');
-        if (cont) {
-          if (resLoc.ok && Array.isArray(dataLoc) && dataLoc.length > 0) {
-            const top3 = dataLoc
-              .filter(r => r.location)
-              .sort((a, b) => (b.total ?? 0) - (a.total ?? 0))
-              .slice(0, 3);
+      // 4) Distribuição por localização e SO (Top 3) - calculado no frontend
+      // (os endpoints /reports/by-location e /reports/by-os estão com erro 500 no backend)
 
-            if (top3.length === 0) {
-              cont.innerHTML = '<div style="font-size:12px; color:var(--text-soft);">Nenhuma localização cadastrada.</div>';
-            } else {
-              cont.innerHTML = top3.map(r => `
-                <div style="display:flex; justify-content:space-between; align-items:center; font-size:12px; padding:4px 0;">
-                  <span>${r.location}</span>
-                  <span style="color:var(--accent-strong); font-weight:500;">${r.total ?? 0}</span>
-                </div>
-              `).join('');
-            }
-          } else {
-            cont.innerHTML = '<div style="font-size:12px; color:var(--text-soft);">Nenhum dado de localização.</div>';
-          }
-        }
-      } catch (err) {
-        console.error(err);
-        const cont = document.getElementById('dashByLocation');
-        if (cont) cont.innerHTML = '<div style="font-size:12px; color:var(--text-soft);">Erro ao carregar distribuição.</div>';
-      }
-
-      // 5) Distribuição por sistema operacional (Top 3)
-      try {
-        const resOs = await fetch(API_BASE + "/reports/by-os", {
-          headers: { Authorization: "Bearer " + token }
-        });
-        const dataOs = await resOs.json();
-        const cont = document.getElementById('dashByOs');
-        if (cont) {
-          if (resOs.ok && Array.isArray(dataOs) && dataOs.length > 0) {
-            const top3 = dataOs
-              .filter(r => r.os)
-              .sort((a, b) => (b.total ?? 0) - (a.total ?? 0))
-              .slice(0, 3);
-
-            if (top3.length === 0) {
-              cont.innerHTML = '<div style="font-size:12px; color:var(--text-soft);">Nenhum SO cadastrado.</div>';
-            } else {
-              cont.innerHTML = top3.map(r => `
-                <div style="display:flex; justify-content:space-between; align-items:center; font-size:12px; padding:4px 0;">
-                  <span>${r.os}</span>
-                  <span style="color:var(--accent-strong); font-weight:500;">${r.total ?? 0}</span>
-                </div>
-              `).join('');
-            }
-          } else {
-            cont.innerHTML = '<div style="font-size:12px; color:var(--text-soft);">Nenhum dado de SO.</div>';
-          }
-        }
-      } catch (err) {
-        console.error(err);
-        const cont = document.getElementById('dashByOs');
-        if (cont) cont.innerHTML = '<div style="font-size:12px; color:var(--text-soft);">Erro ao carregar distribuição.</div>';
-      }
+      // 5) (removido: calculado no frontend)
     }
 
     function setDashboardStatsFallback() {
@@ -1491,7 +1429,49 @@
       if (elNext30) elNext30.innerText = next30;
       if (elNoNext) elNoNext.innerText = noNext;
     }
-    // ====== CALENDÁRIO ANUAL DE PREVENTIVAS ======
+    
+
+    function updateDashboardDistributions(list) {
+      const contLoc = document.getElementById('dashByLocation');
+      const contOs = document.getElementById('dashByOs');
+
+      const locationCounts = {};
+      const osCounts = {};
+
+      (Array.isArray(list) ? list : []).forEach(pc => {
+        const loc = (pc.localizacao || pc.location || '').trim() || 'Não informado';
+        const os = (pc.sistemaOperacional || pc.os || '').trim() || 'Não informado';
+
+        locationCounts[loc] = (locationCounts[loc] || 0) + 1;
+        osCounts[os] = (osCounts[os] || 0) + 1;
+      });
+
+      const top3Loc = Object.entries(locationCounts).sort((a,b) => b[1]-a[1]).slice(0,3);
+      const top3Os = Object.entries(osCounts).sort((a,b) => b[1]-a[1]).slice(0,3);
+
+      if (contLoc) {
+        contLoc.innerHTML = top3Loc.length
+          ? top3Loc.map(([loc,total]) => `
+            <div style="display:flex; justify-content:space-between; align-items:center; font-size:12px; padding:4px 0;">
+              <span>${loc}</span>
+              <span style="color:var(--accent-strong); font-weight:500;">${total}</span>
+            </div>
+          `).join('')
+          : '<div style="font-size:12px; color:var(--text-soft);">Nenhum dado de localização.</div>';
+      }
+
+      if (contOs) {
+        contOs.innerHTML = top3Os.length
+          ? top3Os.map(([os,total]) => `
+            <div style="display:flex; justify-content:space-between; align-items:center; font-size:12px; padding:4px 0;">
+              <span>${os}</span>
+              <span style="color:var(--accent-strong); font-weight:500;">${total}</span>
+            </div>
+          `).join('')
+          : '<div style="font-size:12px; color:var(--text-soft);">Nenhum dado de SO.</div>';
+      }
+    }
+// ====== CALENDÁRIO ANUAL DE PREVENTIVAS ======
     async function loadPreventiveCalendar() {
       if (!token) {
         showToast("Faça login para visualizar o calendário.", "error");
@@ -2259,65 +2239,99 @@
       if (!token) return;
 
       const type = document.getElementById('reportType').value;
-      const until = document.getElementById('rUntil').value;
-      const visual = document.getElementById('reportVisual');
-      const jsonContainer = document.getElementById('jsonContainer');
-      jsonContainer.style.display = 'none';
-      document.getElementById('reportJson').innerText = "{}";
+      const until = document.getElementById('rUntil') ? document.getElementById('rUntil').value : "";
 
-      visual.innerHTML = '<div style="font-size:12px; color:var(--text-soft);">Carregando relatório...</div>';
+      // FIX: Os endpoints /reports/by-location e /reports/by-os estão com erro 500 no backend.
+      // Para não depender deles, calculamos esses relatórios no frontend a partir da lista de computadores.
+      if (type === "by-location" || type === "by-os") {
+        try {
+          const list = await fetchAllComputersForReport();
+          const grouped = groupComputersForReport(list, type);
 
-      let url = "";
-      let params = new URLSearchParams();
+          lastReportJson = grouped;
+          lastReportType = type;
 
-      switch (type) {
-        case "summary":
-          url = "/reports/summary";
-          if (until) params.append("until", until);
-          break;
-        case "pending":
-          url = "/reports/preventives-pending";
-          if (until) params.append("until", until);
-          break;
-        case "by-location":
-          url = "/reports/by-location";
-          break;
-        case "by-os":
-          url = "/reports/by-os";
-          break;
-        case "by-manufacturer":
-          url = "/reports/by-manufacturer";
-          break;
-        case "no-next-date":
-          url = "/reports/no-next-date";
-          break;
-        default:
-          visual.innerHTML = "Tipo de relatório inválido.";
-          return;
+          const jsonEl = document.getElementById('reportJson');
+          if (jsonEl) jsonEl.textContent = JSON.stringify(grouped, null, 2);
+
+          renderReportVisual(type, grouped);
+          showToast("Relatório gerado.", "success");
+        } catch (err) {
+          console.error(err);
+          showToast("Erro ao gerar relatório (frontend).", "error");
+        }
+        return;
       }
 
+      // Padrão: busca do backend
+      const params = new URLSearchParams();
+      params.append('type', type);
+      if (until) params.append('until', until);
+
       try {
-        const res = await fetch(API_BASE + url + (params.toString() ? "?" + params.toString() : ""), {
+        const res = await fetch(API_BASE + "/reports?" + params.toString(), {
           headers: { Authorization: "Bearer " + token }
         });
-        const data = await res.json();
 
+        const data = await res.json();
         if (!res.ok) {
-          visual.innerHTML = data.message || "Erro ao gerar relatório";
+          console.error("Erro runReport:", data);
           showToast(data.message || "Erro ao gerar relatório", "error");
           return;
         }
 
         lastReportJson = data;
         lastReportType = type;
+
+        const jsonEl = document.getElementById('reportJson');
+        if (jsonEl) jsonEl.textContent = JSON.stringify(data, null, 2);
+
         renderReportVisual(type, data);
-        showToast("Relatório gerado com sucesso!", "success");
+        showToast("Relatório gerado.", "success");
       } catch (err) {
         console.error(err);
-        visual.innerHTML = "Erro ao conectar ao servidor";
-        showToast("Erro ao conectar ao servidor", "error");
+        showToast("Erro ao conectar ao servidor ao gerar relatório.", "error");
       }
     }
+    async function fetchAllComputersForReport() {
+      // usa paginação grande para cálculos (ajuste se tiver mais de 10k)
+      const res = await fetch(API_BASE + "/computers?page=1&pageSize=10000", {
+        headers: { Authorization: "Bearer " + token }
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.message || "Falha ao buscar computadores para relatório.");
+      }
+
+      // compatibilidade com formatos diferentes
+      if (Array.isArray(data.items)) return data.items;
+      if (Array.isArray(data.data)) return data.data;
+      if (Array.isArray(data.computers)) return data.computers;
+      if (Array.isArray(data)) return data;
+      return [];
+    }
+
+    function groupComputersForReport(list, type) {
+      const map = {};
+      const isLoc = type === "by-location";
+
+      (list || []).forEach(pc => {
+        const key = isLoc
+          ? (pc.localizacao || "Não informado")
+          : (pc.sistemaOperacional || "Não informado");
+
+        const k = String(key).trim() || "Não informado";
+        map[k] = (map[k] || 0) + 1;
+      });
+
+      const arr = Object.entries(map)
+        .map(([k, total]) => (isLoc ? { location: k, total } : { os: k, total }))
+        .sort((a, b) => (b.total || 0) - (a.total || 0));
+
+      return arr;
+    }
+
 
     function getReportTypeLabel(type) {
   switch (type) {
