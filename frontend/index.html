@@ -2267,6 +2267,73 @@
       }
     }
 
+    // ====== RELATÓRIOS (helpers no frontend) ======
+    async function fetchAllComputersForReports() {
+      const res = await fetch(API_BASE + "/computers?page=1&pageSize=10000", {
+        headers: { Authorization: "Bearer " + token }
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Erro ao carregar computadores");
+      return data.items || data.data || data.computers || [];
+    }
+
+    function computeSummaryFromComputers(list, untilStr) {
+      const until = untilStr ? new Date(untilStr + "T23:59:59") : new Date();
+      const untilTime = until.getTime();
+
+      const in30 = new Date(until);
+      in30.setDate(in30.getDate() + 30);
+      const in30Time = in30.getTime();
+
+      let totalComputers = 0;
+      let overdue = 0;   // próxima preventiva < until
+      let dueSoon = 0;   // próxima preventiva <= until
+      let next30 = 0;    // próxima preventiva entre until e until+30
+      let noNext = 0;    // sem próxima preventiva
+      let pending = 0;   // sem última preventiva
+
+      (list || []).forEach(pc => {
+        totalComputers++;
+
+        const last = pc.dataUltimaPreventiva || null;
+        const next = pc.dataProximaPreventiva || null;
+
+        if (!last) pending++;
+
+        if (!next) {
+          noNext++;
+          return;
+        }
+
+        // aceita ISO com hora, YYYY-MM-DD e DD/MM/AAAA
+        let dt = null;
+        if (typeof next === "string" && next.includes("/")) {
+          const parts = next.split("/");
+          if (parts.length === 3) {
+            const dd = parts[0], mm = parts[1], yyyy = parts[2];
+            dt = new Date(Number(yyyy), Number(mm) - 1, Number(dd), 0, 0, 0);
+          }
+        } else if (typeof next === "string") {
+          dt = new Date(next.includes("T") ? next : (next + "T00:00:00"));
+        } else {
+          dt = new Date(next);
+        }
+
+        if (!dt || isNaN(dt.getTime())) {
+          noNext++;
+          return;
+        }
+
+        const t = dt.getTime();
+        if (t < untilTime) overdue++;
+        if (t <= untilTime) dueSoon++;
+        if (t >= untilTime && t <= in30Time) next30++;
+      });
+
+      return { totalComputers, overdue, dueSoon, next30, noNext, pending };
+    }
+
+
     async function runReport() {
       if (!token) return;
 
