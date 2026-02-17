@@ -1472,6 +1472,26 @@
       }
     }
 // ====== CALENDÁRIO ANUAL DE PREVENTIVAS ======
+    function normalizeToIsoDate(value) {
+      if (!value) return null;
+
+      if (value instanceof Date && !isNaN(value.getTime())) {
+        return value.toISOString().slice(0, 10);
+      }
+
+      const s = String(value).trim();
+
+      // ISO / datetime: 2026-02-17 or 2026-02-17T...
+      const isoMatch = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+      if (isoMatch) return `${isoMatch[1]}-${isoMatch[2]}-${isoMatch[3]}`;
+
+      // BR: dd/mm/yyyy
+      const brMatch = s.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+      if (brMatch) return `${brMatch[3]}-${brMatch[2]}-${brMatch[1]}`;
+
+      return null;
+    }
+
     async function loadPreventiveCalendar() {
       if (!token) {
         showToast("Faça login para visualizar o calendário.", "error");
@@ -1487,12 +1507,19 @@
       }
 
       try {
-        // Busca todas as máquinas e monta o calendário usando dataProximaPreventiva (padrão PT)
         const res = await fetch(API_BASE + "/computers?page=1&pageSize=10000", {
           headers: { Authorization: "Bearer " + token }
         });
 
-        const data = await res.json();
+        const text = await res.text();
+        let data;
+        try {
+          data = JSON.parse(text);
+        } catch (e) {
+          console.error("Resposta não é JSON em /computers. Status:", res.status, "Body:", text);
+          showToast("Erro ao carregar calendário (resposta inválida do servidor).", "error");
+          return;
+        }
 
         if (!res.ok) {
           console.error("Erro ao carregar computadores para calendário:", data);
@@ -1506,21 +1533,26 @@
         else if (Array.isArray(data.data)) list = data.data;
         else if (Array.isArray(data)) list = data;
 
-        // Agrupa por dia (YYYY-MM-DD) do ano selecionado
         const byDay = new Map();
 
         list.forEach(pc => {
-          const next = pc.dataProximaPreventiva;
-          if (!next) return;
+          const rawNext =
+            pc.dataProximaPreventiva ??
+            pc.data_proxima_preventiva ??
+            pc.nextPreventiveDate ??
+            pc.next_preventive_date ??
+            null;
 
-          const iso = String(next).substring(0, 10);
-          if (!/^\d{4}-\d{2}-\d{2}$/.test(iso)) return;
-          if (parseInt(iso.substring(0, 4), 10) !== year) return;
+          const iso = normalizeToIsoDate(rawNext);
+          if (!iso) return;
+
+          const y = parseInt(iso.substring(0, 4), 10);
+          if (y !== year) return;
 
           if (!byDay.has(iso)) byDay.set(iso, []);
           byDay.get(iso).push({
-            name: pc.nome || "Sem nome",
-            location: pc.localizacao || ""
+            name: pc.nome || pc.name || "Sem nome",
+            location: pc.localizacao || pc.location || ""
           });
         });
 
