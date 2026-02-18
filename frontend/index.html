@@ -1176,6 +1176,9 @@
 
   <script>
 // ====== CONFIG API ======
+    const INDEX_VERSION = 'v3-pct-location-frontend-1';
+    console.log('Loaded index version:', INDEX_VERSION);
+
     const API_BASE = "https://prev-l0mb.onrender.com/api";
 
       let token = null;
@@ -2408,6 +2411,29 @@
         } catch (err) {
           console.error(err);
           showToast("Erro ao gerar relatório (frontend).", "error");
+        }
+        return;
+      }
+
+
+      // ✅ % preventivas realizadas por localização (ANUAL - ano atual) - FRONTEND
+      if (type === "pct-done-by-location") {
+        try {
+          const list = await fetchAllComputersForReports();
+          const year = new Date().getFullYear();
+          const result = computePctDoneByLocationAnnual(list, year);
+
+          lastReportJson = result;
+          lastReportType = "pct-done-by-location";
+
+          const jsonEl = document.getElementById('reportJson');
+          if (jsonEl) jsonEl.textContent = JSON.stringify(result, null, 2);
+
+          renderReportVisual("pct-done-by-location", result);
+          showToast("Relatório gerado.", "success");
+        } catch (err) {
+          console.error(err);
+          showToast("Erro ao gerar relatório anual por localização.", "error");
         }
         return;
       }
