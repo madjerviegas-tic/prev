@@ -988,7 +988,8 @@
             <div class="col" style="max-width:260px;">
               <label>Tipo de relatório</label>
               <select id="reportType" class="input">
-                <option value="summary">Resumo geral de preventivas</option>
+                
+                <option value="pct-done-by-location">% de preventivas realizadas por localização (ano)</option><option value="summary">Resumo geral de preventivas</option>
                 <option value="pending">Preventivas pendentes até a data</option>
                 <option value="by-location">Distribuição por localização</option>
                 <option value="by-os">Distribuição por sistema operacional</option>
@@ -2332,6 +2333,40 @@
           noNext++;
           return;
         }
+
+
+    function computePctDoneByLocationAnnual(list, year) {
+      const start = new Date(year, 0, 1, 0, 0, 0);
+      const end = new Date(year + 1, 0, 1, 0, 0, 0);
+
+      const counts = {};
+      let totalDone = 0;
+
+      (list || []).forEach(pc => {
+        const locRaw = (pc.localizacao || "").trim();
+        const location = locRaw || "Não informado";
+
+        const lastStr = pc.dataUltimaPreventiva;
+        const lastDt = parsePtDateToJs(lastStr);
+        if (!lastDt) return;
+
+        if (lastDt >= start && lastDt < end) {
+          counts[location] = (counts[location] || 0) + 1;
+          totalDone++;
+        }
+      });
+
+      const locations = Object.entries(counts)
+        .map(([location, count]) => ({
+          location,
+          count,
+          pct: totalDone ? Math.round((count / totalDone) * 1000) / 10 : 0
+        }))
+        .sort((a, b) => b.count - a.count);
+
+      return { year, totalDone, locations };
+    }
+
 
         const dt = parsePtDateToJs(next);
         if (!dt) {
