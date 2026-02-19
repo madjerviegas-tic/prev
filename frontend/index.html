@@ -600,7 +600,7 @@
       <div class="brand-logo">IT</div>
       <div>
         <div class="brand-text-title">Sistema de Preventiva</div>
-        <div class="brand-text-sub">Controle de manutenções de computadores • <span id="indexVersionBadge" style="color:#38bdf8;font-weight:600;">v3-reports-front-fallback-20260219154816</span></div>
+        <div class="brand-text-sub">Controle de manutenções de computadores • <span id="indexVersionBadge" style="color:#38bdf8;font-weight:600;">v3-reports-front-pie-20260219155935</span></div>
       </div>
     </div>
 
@@ -989,7 +989,8 @@
               <label>Tipo de relatório</label>
               <select id="reportType" class="input">
                 
-                <option value="pct-done-by-location">% de preventivas realizadas por localização (ano)</option><option value="summary">Resumo geral de preventivas</option>
+                
+                <option value="pie-done-by-location-year">Gráfico: preventivas realizadas por localização (ano atual)</option><option value="pct-done-by-location">% de preventivas realizadas por localização (ano)</option><option value="summary">Resumo geral de preventivas</option>
                 <option value="pending">Preventivas pendentes até a data</option>
                 <option value="by-location">Distribuição por localização</option>
                 <option value="by-os">Distribuição por sistema operacional</option>
@@ -1176,7 +1177,7 @@
 
   <script>
 // ====== CONFIG API ======
-    const INDEX_VERSION = 'v3-reports-front-fallback-20260219154816';
+    const INDEX_VERSION = 'v3-reports-front-pie-20260219155935';
     console.log('Loaded index version:', INDEX_VERSION);
 
     const API_BASE = "https://prev-l0mb.onrender.com/api";
@@ -2555,6 +2556,66 @@ async function runReport() {
     }
     return;
   }
+  // ===========================================
+  // 3) GRÁFICO CIRCULAR - PREVENTIVAS POR LOCALIZAÇÃO (ANO ATUAL)
+  // ===========================================
+  if (type === "pie-done-by-location-year") {
+    try {
+      const res = await fetch(API_BASE + "/computers?page=1&pageSize=10000", {
+        headers: { Authorization: "Bearer " + token }
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.message || "Erro ao carregar computadores");
+      }
+      const list = data.items || data.data || data.computers || [];
+
+      const currentYear = new Date().getFullYear();
+      const startYear = new Date(currentYear, 0, 1, 0, 0, 0);
+      const endYear = new Date(currentYear + 1, 0, 1, 0, 0, 0);
+
+      const counts = {};
+      let totalDone = 0;
+
+      (list || []).forEach(pc => {
+        const locRaw = (pc.localizacao || "").trim();
+        const location = locRaw || "Não informado";
+
+        const lastStr = pc.dataUltimaPreventiva;
+        const lastDt = lastStr ? parseDate(lastStr) : null;
+        if (!lastDt) return;
+
+        if (lastDt >= startYear && lastDt < endYear) {
+          counts[location] = (counts[location] || 0) + 1;
+          totalDone++;
+        }
+      });
+
+      const locations = Object.entries(counts)
+        .map(([location, count]) => ({
+          location,
+          count,
+          pct: totalDone ? Math.round((count / totalDone) * 1000) / 10 : 0
+        }))
+        .sort((a, b) => b.count - a.count);
+
+      const result = { year: String(currentYear), totalDone, locations };
+
+      lastReportJson = result;
+      lastReportType = "pie-done-by-location-year";
+
+      if (reportJsonEl) {
+        reportJsonEl.textContent = JSON.stringify(result, null, 2);
+      }
+      renderReportVisual("pie-done-by-location-year", result);
+      showToast("Gráfico por localização (ano atual) gerado.");
+    } catch (err) {
+      console.error(err);
+      showToast("Erro ao gerar gráfico por localização (ano atual).", "error");
+    }
+    return;
+  }
+
 
   // ===========================================
   // 3) DEMAIS RELATÓRIOS -> BACKEND /reports
