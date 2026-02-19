@@ -1173,7 +1173,7 @@
 
   <script>
 // ====== CONFIG API ======
-    const INDEX_VERSION = 'v3-computers-realizado-fixdates-20260219164131';
+    const INDEX_VERSION = 'v4-reports-period-fix-20260219191432';
     console.log('Loaded index version:', INDEX_VERSION);
 
     const API_BASE = "https://prev-l0mb.onrender.com/api";
@@ -2630,7 +2630,9 @@ function getReportTypeLabel(type) {
       return "Relatório de preventivas";
   }
 }
-\n\nfunction exportReportPdf() {
+
+
+function exportReportPdf() {
   const type = document.getElementById('reportType').value;
   const visual = document.getElementById('reportVisual');
 
