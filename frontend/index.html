@@ -980,7 +980,7 @@
             <div>
               <div class="card-title">Configuração do relatório</div>
               <div class="card-subtitle">
-                Selecione o tipo de relatório que deseja visualizar. Alguns permitem informar uma data de referência.
+                Selecione o tipo de relatório que deseja visualizar e informe o período de análise (data início e data fim).
               </div>
             </div>
           </div>
@@ -995,12 +995,20 @@
               </select>
             </div>
 
+            
             <div class="col" style="max-width:220px;">
-              <label>Data de referência (opcional)</label>
+              <label>Data início</label>
+              <input type="date" id="rFrom" class="input" />
+            </div>
+
+            <div class="col" style="max-width:220px;">
+              <label>Data fim</label>
               <input type="date" id="rUntil" class="input" />
               <div style="font-size:11px; color:var(--text-soft); margin-top:4px;">
-                Usada em: "Resumo geral" e "Pendentes até a data".
+                Usada por todos os relatórios para filtrar o período.
               </div>
+            </div>
+
             </div>
           </div>
 
@@ -1173,7 +1181,7 @@
 
   <script>
 // ====== CONFIG API ======
-    const INDEX_VERSION = 'v4-reports-period-fix-20260219191432';
+    const INDEX_VERSION = 'v4-reports-period-dates-20260219192453';
     console.log('Loaded index version:', INDEX_VERSION);
 
     const API_BASE = "https://prev-l0mb.onrender.com/api";
