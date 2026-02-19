@@ -600,7 +600,7 @@
       <div class="brand-logo">IT</div>
       <div>
         <div class="brand-text-title">Sistema de Preventiva</div>
-        <div class="brand-text-sub">Controle de manutenções de computadores • <span id="indexVersionBadge" style="color:#38bdf8;font-weight:600;">v3-reports-front-pie-20260219155935</span></div>
+        <div class="brand-text-sub">Controle de manutenções de computadores • <span id="indexVersionBadge" style="color:#38bdf8;font-weight:600;">v3-computers-realizado-20260219161829</span></div>
       </div>
     </div>
 
@@ -888,6 +888,7 @@
                   <th>SO</th>
                   <th>Última</th>
                   <th>Próxima</th>
+                  <th>Realizado</th>
                 </tr>
               </thead>
               <tbody id="computersTableBody"></tbody>
@@ -1177,7 +1178,7 @@
 
   <script>
 // ====== CONFIG API ======
-    const INDEX_VERSION = 'v3-reports-front-pie-20260219155935';
+    const INDEX_VERSION = 'v3-computers-realizado-20260219161829';
     console.log('Loaded index version:', INDEX_VERSION);
 
     const API_BASE = "https://prev-l0mb.onrender.com/api";
@@ -1219,7 +1220,44 @@
     }
 
 
-    function updateSelectedCount() {
+    
+    async function markPreventiveDone(id) {
+      if (!token) return;
+      try {
+        const today = new Date();
+        const next = new Date(today);
+        next.setFullYear(today.getFullYear() + 1);
+
+        // Formato ISO (backend já lida com isso)
+        const body = {
+          dataUltimaPreventiva: today.toISOString(),
+          dataProximaPreventiva: next.toISOString()
+        };
+
+        const res = await fetch(API_BASE + "/computers/" + id, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + token
+          },
+          body: JSON.stringify(body)
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          console.error(data);
+          showToast(data.message || "Erro ao marcar preventiva como realizada.", "error");
+          return;
+        }
+        showToast("Preventiva marcada como realizada.");
+        // Recarrega a lista após atualizar
+        await loadComputers();
+      } catch (err) {
+        console.error(err);
+        showToast("Erro ao conectar ao servidor.", "error");
+      }
+    }
+
+function updateSelectedCount() {
       const count = Array.from(document.querySelectorAll('.rowCheck'))
         .filter(c => c.checked).length;
       document.getElementById('countSelected').innerText = count;
@@ -2043,6 +2081,9 @@
           <td>${c.os}</td>
           <td>${c.lastPreventiveDate ? c.lastPreventiveDate.substring(0,10) : ""}</td>
           <td>${c.nextPreventiveDate ? c.nextPreventiveDate.substring(0,10) : ""}</td>
+          <td>
+            <button class="btn-sm" onclick="markPreventiveDone(${c.id})">Realizado</button>
+          </td>
         `;
         tbody.appendChild(tr);
       });
