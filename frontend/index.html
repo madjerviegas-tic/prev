@@ -600,7 +600,7 @@
       <div class="brand-logo">IT</div>
       <div>
         <div class="brand-text-title">Sistema de Preventiva</div>
-        <div class="brand-text-sub">Controle de manutenções de computadores • <span id="indexVersionBadge" style="color:#38bdf8;font-weight:600;">v3-computers-realizado-fixdates-20260219164131</span></div>
+        <div class="brand-text-sub">Controle de manutenções de computadores • \1v4-reports-period-20260219175852\2</div>
       </div>
     </div>
 
@@ -989,14 +989,9 @@
             <div class="col" style="max-width:260px;">
               <label>Tipo de relatório</label>
               <select id="reportType" class="input">
-                
-                
-                <option value="pie-done-by-location-year">Gráfico: preventivas realizadas por localização (ano atual)</option><option value="pct-done-by-location">% de preventivas realizadas por localização (ano)</option><option value="summary">Resumo geral de preventivas</option>
-                <option value="pending">Preventivas pendentes até a data</option>
-                <option value="by-location">Distribuição por localização</option>
-                <option value="by-os">Distribuição por sistema operacional</option>
-                <option value="by-manufacturer">Distribuição por fabricante</option>
-                <option value="no-next-date">Máquinas sem próxima preventiva</option>
+                <option value="period-total-pct">Total de computadores com % de preventivas realizadas</option>
+                <option value="period-by-location">Preventivas realizadas por localização</option>
+                <option value="period-done-vs-overdue">Preventivas realizadas x vencidas</option>
               </select>
             </div>
 
@@ -2432,17 +2427,19 @@ function updateSelectedCount() {
 
 
     
+
 async function runReport() {
   if (!token) return;
 
   const typeEl = document.getElementById("reportType");
+  const fromEl = document.getElementById("rFrom");
   const untilEl = document.getElementById("rUntil");
   const type = typeEl ? typeEl.value : "";
+  const from = fromEl ? fromEl.value : "";
   const until = untilEl ? untilEl.value : "";
 
   const reportJsonEl = document.getElementById("reportJson");
 
-  // Helper local para parsear datas (DD/MM/AAAA, YYYY-MM-DD, ISO)
   const parseDate = (str) => {
     if (!str) return null;
     if (typeof str !== "string") {
@@ -2452,7 +2449,6 @@ async function runReport() {
     const s = str.trim();
     if (!s) return null;
 
-    // DD/MM/AAAA
     if (s.includes("/")) {
       const parts = s.split("/");
       if (parts.length === 3) {
@@ -2464,238 +2460,177 @@ async function runReport() {
       }
     }
 
-    // YYYY-MM-DD ou ISO
     const d = new Date(s.includes("T") ? s : (s + "T00:00:00"));
     return isNaN(d.getTime()) ? null : d;
   };
 
-  // =========================
-  // 1) SUMMARY NO FRONTEND
-  // =========================
-  if (type === "summary") {
-    try {
-      const res = await fetch(API_BASE + "/computers?page=1&pageSize=10000", {
-        headers: { Authorization: "Bearer " + token }
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.message || "Erro ao carregar computadores");
-      }
-      const list = data.items || data.data || data.computers || [];
-
-      // Define data de corte (until ou hoje)
-      const corte = until ? parseDate(until) : new Date();
-      const corteTime = corte.getTime();
-
-      const in30 = new Date(corte);
-      in30.setDate(in30.getDate() + 30);
-      const in30Time = in30.getTime();
-
-      let totalComputers = 0;
-      let overdue = 0;
-      let next30 = 0;
-      let noNext = 0;
-      let pending = 0;
-
-      list.forEach(pc => {
-        totalComputers++;
-
-        const lastStr = pc.dataUltimaPreventiva;
-        const nextStr = pc.dataProximaPreventiva;
-
-        const lastDt = lastStr ? parseDate(lastStr) : null;
-        const nextDt = nextStr ? parseDate(nextStr) : null;
-
-        if (!lastDt) {
-          pending++;
-        }
-
-        if (!nextDt) {
-          noNext++;
-          return;
-        }
-
-        const t = nextDt.getTime();
-        if (t < corteTime) {
-          overdue++;
-        }
-        if (t >= corteTime && t <= in30Time) {
-          next30++;
-        }
-      });
-
-      const summary = { totalComputers, overdue, next30, noNext, pending };
-
-      lastReportJson = summary;
-      lastReportType = "summary";
-
-      if (reportJsonEl) {
-        reportJsonEl.textContent = JSON.stringify(summary, null, 2);
-      }
-      renderReportVisual("summary", summary);
-      showToast("Relatório de resumo geral gerado.");
-    } catch (err) {
-      console.error(err);
-      showToast("Erro ao gerar resumo geral (front).", "error");
-    }
+  if (!from || !until) {
+    showToast("Informe data de início e data de fim.", "error");
     return;
   }
 
-  // ===========================================
-  // 2) % PREVENTIVAS REALIZADAS POR LOCALIZAÇÃO
-  //    (ANUAL, SEM PRECISAR PREENCHER DATA)
-  // ===========================================
-  if (type === "pct-done-by-location") {
-    try {
-      const res = await fetch(API_BASE + "/computers?page=1&pageSize=10000", {
-        headers: { Authorization: "Bearer " + token }
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.message || "Erro ao carregar computadores");
-      }
-      const list = data.items || data.data || data.computers || [];
-
-      const year = new Date().getFullYear();
-      const start = new Date(year, 0, 1, 0, 0, 0);
-      const end = new Date(year + 1, 0, 1, 0, 0, 0);
-
-      const counts = {};
-      let totalDone = 0;
-
-      (list || []).forEach(pc => {
-        const locRaw = (pc.localizacao || "").trim();
-        const location = locRaw || "Não informado";
-
-        const lastStr = pc.dataUltimaPreventiva;
-        const lastDt = lastStr ? parseDate(lastStr) : null;
-        if (!lastDt) return;
-
-        if (lastDt >= start && lastDt < end) {
-          counts[location] = (counts[location] || 0) + 1;
-          totalDone++;
-        }
-      });
-
-      const locations = Object.entries(counts)
-        .map(([location, count]) => ({
-          location,
-          count,
-          pct: totalDone ? Math.round((count / totalDone) * 1000) / 10 : 0
-        }))
-        .sort((a, b) => b.count - a.count);
-
-      const result = { year, totalDone, locations };
-
-      lastReportJson = result;
-      lastReportType = "pct-done-by-location";
-
-      if (reportJsonEl) {
-        reportJsonEl.textContent = JSON.stringify(result, null, 2);
-      }
-      renderReportVisual("pct-done-by-location", result);
-      showToast("Relatório anual por localização gerado.");
-    } catch (err) {
-      console.error(err);
-      showToast("Erro ao gerar relatório anual por localização.", "error");
-    }
+  const start = parseDate(from);
+  const end = parseDate(until);
+  if (!start || !end) {
+    showToast("Datas inválidas.", "error");
     return;
   }
-  // ===========================================
-  // 3) GRÁFICO CIRCULAR - PREVENTIVAS POR LOCALIZAÇÃO (ANO ATUAL)
-  // ===========================================
-  if (type === "pie-done-by-location-year") {
-    try {
-      const res = await fetch(API_BASE + "/computers?page=1&pageSize=10000", {
-        headers: { Authorization: "Bearer " + token }
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.message || "Erro ao carregar computadores");
-      }
-      const list = data.items || data.data || data.computers || [];
-
-      const currentYear = new Date().getFullYear();
-      const startYear = new Date(currentYear, 0, 1, 0, 0, 0);
-      const endYear = new Date(currentYear + 1, 0, 1, 0, 0, 0);
-
-      const counts = {};
-      let totalDone = 0;
-
-      (list || []).forEach(pc => {
-        const locRaw = (pc.localizacao || "").trim();
-        const location = locRaw || "Não informado";
-
-        const lastStr = pc.dataUltimaPreventiva;
-        const lastDt = lastStr ? parseDate(lastStr) : null;
-        if (!lastDt) return;
-
-        if (lastDt >= startYear && lastDt < endYear) {
-          counts[location] = (counts[location] || 0) + 1;
-          totalDone++;
-        }
-      });
-
-      const locations = Object.entries(counts)
-        .map(([location, count]) => ({
-          location,
-          count,
-          pct: totalDone ? Math.round((count / totalDone) * 1000) / 10 : 0
-        }))
-        .sort((a, b) => b.count - a.count);
-
-      const result = { year: String(currentYear), totalDone, locations };
-
-      lastReportJson = result;
-      lastReportType = "pie-done-by-location-year";
-
-      if (reportJsonEl) {
-        reportJsonEl.textContent = JSON.stringify(result, null, 2);
-      }
-      renderReportVisual("pie-done-by-location-year", result);
-      showToast("Gráfico por localização (ano atual) gerado.");
-    } catch (err) {
-      console.error(err);
-      showToast("Erro ao gerar gráfico por localização (ano atual).", "error");
-    }
+  if (end < start) {
+    showToast("Data fim não pode ser menor que a data início.", "error");
     return;
   }
 
-
-  // ===========================================
-  // 3) DEMAIS RELATÓRIOS -> BACKEND /reports
-  // ===========================================
-  const params = new URLSearchParams();
-  if (type) params.append("type", type);
-  if (until) params.append("until", until);
-
+  let list = [];
   try {
-    const res = await fetch(API_BASE + "/reports?" + params.toString(), {
+    const res = await fetch(API_BASE + "/computers?page=1&pageSize=10000", {
       headers: { Authorization: "Bearer " + token }
     });
     const data = await res.json();
     if (!res.ok) {
-      showToast(data.message || "Erro ao gerar relatório no servidor.", "error");
-      return;
+      throw new Error(data.message || "Erro ao carregar computadores");
     }
-
-    lastReportJson = data;
-    lastReportType = type;
-
-    if (reportJsonEl) {
-      reportJsonEl.textContent = JSON.stringify(data, null, 2);
-    }
-
-    renderReportVisual(type, data);
-    showToast("Relatório gerado.");
+    list = data.items || data.data || data.computers || [];
   } catch (err) {
     console.error(err);
-    showToast("Erro ao conectar ao servidor de relatórios.", "error");
+    showToast("Erro ao carregar computadores.", "error");
+    return;
   }
+
+  const period = { from, until };
+  const today = new Date();
+
+  if (type === "period-total-pct") {
+    const totalComputers = list.length;
+    let doneInPeriod = 0;
+
+    (list || []).forEach(pc => {
+      const lastStr = pc.lastPreventiveDate || pc.dataUltimaPreventiva;
+      const lastDt = lastStr ? parseDate(lastStr) : null;
+      if (lastDt && lastDt >= start && lastDt <= end) {
+        doneInPeriod++;
+      }
+    });
+
+    const pctDone = totalComputers
+      ? Math.round((doneInPeriod / totalComputers) * 1000) / 10
+      : 0;
+
+    const result = {
+      period,
+      totalComputers,
+      doneInPeriod,
+      pctDone
+    };
+
+    lastReportJson = result;
+    lastReportType = type;
+    if (reportJsonEl) {
+      reportJsonEl.textContent = JSON.stringify(result, null, 2);
+    }
+    renderReportVisual(type, result);
+    showToast("Relatório de % realizadas gerado.");
+    return;
+  }
+
+  if (type === "period-by-location") {
+    const counts = {};
+    let totalDone = 0;
+
+    (list || []).forEach(pc => {
+      const lastStr = pc.lastPreventiveDate || pc.dataUltimaPreventiva;
+      const lastDt = lastStr ? parseDate(lastStr) : null;
+      if (!lastDt || lastDt < start || lastDt > end) return;
+
+      const locRaw = pc.location || pc.localizacao || "";
+      const location = (locRaw || "").trim() || "Não informado";
+
+      counts[location] = (counts[location] || 0) + 1;
+      totalDone++;
+    });
+
+    const locations = Object.entries(counts)
+      .map(([location, count]) => ({
+        location,
+        count,
+        pct: totalDone ? Math.round((count / totalDone) * 1000) / 10 : 0
+      }))
+      .sort((a, b) => b.count - a.count);
+
+    const result = {
+      period,
+      totalDone,
+      locations
+    };
+
+    lastReportJson = result;
+    lastReportType = type;
+    if (reportJsonEl) {
+      reportJsonEl.textContent = JSON.stringify(result, null, 2);
+    }
+    renderReportVisual(type, result);
+    showToast("Relatório por localização gerado.");
+    return;
+  }
+
+  if (type === "period-done-vs-overdue") {
+    const totalComputers = list.length;
+    let doneInPeriod = 0;
+    let overdueInPeriod = 0;
+
+    (list || []).forEach(pc => {
+      const lastStr = pc.lastPreventiveDate || pc.dataUltimaPreventiva;
+      const nextStr = pc.nextPreventiveDate || pc.dataProximaPreventiva;
+      const lastDt = lastStr ? parseDate(lastStr) : null;
+      const nextDt = nextStr ? parseDate(nextStr) : null;
+
+      if (lastDt && lastDt >= start && lastDt <= end) {
+        doneInPeriod++;
+      }
+
+      if (nextDt && nextDt < today && nextDt >= start && nextDt <= end) {
+        overdueInPeriod++;
+      }
+    });
+
+    const notDoneInPeriod = totalComputers - doneInPeriod;
+
+    const result = {
+      period,
+      totalComputers,
+      doneInPeriod,
+      overdueInPeriod,
+      notDoneInPeriod
+    };
+
+    lastReportJson = result;
+    lastReportType = type;
+    if (reportJsonEl) {
+      reportJsonEl.textContent = JSON.stringify(result, null, 2);
+    }
+    renderReportVisual(type, result);
+    showToast("Relatório realizadas x vencidas gerado.");
+    return;
+  }
+
+  showToast("Tipo de relatório não suportado.", "error");
 }
 
 
-function exportReportPdf() {
+
+
+function getReportTypeLabel(type) {
+  switch (type) {
+    case "period-total-pct":
+      return "Total de computadores com % de preventivas realizadas";
+    case "period-by-location":
+      return "Preventivas realizadas por localização";
+    case "period-done-vs-overdue":
+      return "Preventivas realizadas x vencidas";
+    default:
+      return "Relatório de preventivas";
+  }
+}
+\n\nfunction exportReportPdf() {
   const type = document.getElementById('reportType').value;
   const visual = document.getElementById('reportVisual');
 
@@ -2805,99 +2740,79 @@ function exportReportPdf() {
 }
 
 
-    function renderReportVisual(type, data) {
+    
+function renderReportVisual(type, data) {
       const visual = document.getElementById('reportVisual');
+      const period = data.period || {};
+      const from = period.from || "-";
+      const until = period.until || "-";
 
-      if (type === "summary") {
+      if (!visual) return;
+
+      if (type === "period-total-pct") {
         const total = data.totalComputers ?? 0;
-        const overdue = data.overdue ?? 0;
-        const dueSoon = data.dueSoon7Days ?? 0;
-        const noNext = data.noNextDate ?? 0;
+        const done = data.doneInPeriod ?? 0;
+        const pct = data.pctDone ?? 0;
+        const pctInt = Math.round(pct);
 
         visual.innerHTML = `
           <div class="report-grid">
+            <div class="report-card">
+              <div class="report-card-label">Período</div>
+              <div class="report-card-value" style="font-size:13px;">${from} até ${until}</div>
+              <div class="report-card-note">Filtro aplicado em todas as métricas abaixo</div>
+            </div>
             <div class="report-card">
               <div class="report-card-label">Total de computadores</div>
               <div class="report-card-value">${total}</div>
-              <div class="report-card-note">Todos os equipamentos cadastrados</div>
+              <div class="report-card-note">Equipamentos cadastrados no sistema</div>
             </div>
             <div class="report-card">
-              <div class="report-card-label">Vencidas até ${data.until || '-'}</div>
-              <div class="report-card-value" style="color:var(--danger);">${overdue}</div>
-              <div class="report-card-note">Preventivas com data já vencida</div>
+              <div class="report-card-label">Preventivas realizadas no período</div>
+              <div class="report-card-value">${done}</div>
+              <div class="report-card-note">Última preventiva entre as datas informadas</div>
             </div>
             <div class="report-card">
-              <div class="report-card-label">A vencer em 7 dias</div>
-              <div class="report-card-value" style="color:var(--accent-strong);">${dueSoon}</div>
-              <div class="report-card-note">Janela de 7 dias a partir da data de referência</div>
+              <div class="report-card-label">% de realização</div>
+              <div class="report-card-value">${pct.toFixed(1)}%</div>
+              <div class="report-card-note">Proporção de máquinas atendidas no período</div>
             </div>
-            <div class="report-card">
-              <div class="report-card-label">Sem próxima preventiva definida</div>
-              <div class="report-card-value">${noNext}</div>
-              <div class="report-card-note">Máquinas sem data planejada</div>
+          </div>
+
+          <div style="margin-top:16px;">
+            <div style="font-size:12px; color:var(--text-soft); margin-bottom:4px;">
+              Visão gráfica de realização no período
+            </div>
+            <div class="bar-row">
+              <div class="bar-label">Realizadas</div>
+              <div class="bar-track">
+                <div class="bar-fill" style="width:${pctInt}%;"></div>
+              </div>
+              <div class="bar-value">${pct.toFixed(1)}%</div>
             </div>
           </div>
         `;
         return;
       }
 
-      if (type === "pending") {
-        const overdue = data.overdue ?? 0;
-        const dueSoon = data.due_soon ?? 0;
-        const totalPending = data.total_pending ?? 0;
-        visual.innerHTML = `
-          <div class="report-grid">
-            <div class="report-card">
-              <div class="report-card-label">Data de corte</div>
-              <div class="report-card-value">${data.until || '-'}</div>
-              <div class="report-card-note">Considerando preventivas até esta data</div>
-            </div>
-            <div class="report-card">
-              <div class="report-card-label">Preventivas vencidas</div>
-              <div class="report-card-value" style="color:var(--danger);">${overdue}</div>
-              <div class="report-card-note">Já deveriam ter sido realizadas</div>
-            </div>
-            <div class="report-card">
-              <div class="report-card-label">A vencer até a data</div>
-              <div class="report-card-value" style="color:var(--accent-strong);">${dueSoon}</div>
-              <div class="report-card-note">Ainda dentro do prazo</div>
-            </div>
-            <div class="report-card">
-              <div class="report-card-label">Total pendente</div>
-              <div class="report-card-value">${totalPending}</div>
-              <div class="report-card-note">Soma de vencidas + a vencer</div>
-            </div>
-          </div>
-        `;
-        return;
-      }
+      if (type === "period-by-location") {
+        const locations = data.locations || [];
+        const totalDone = data.totalDone ?? 0;
 
-      if (type === "by-location" || type === "by-os" || type === "by-manufacturer") {
-        const arr = Array.isArray(data) ? data : [];
-        if (arr.length === 0) {
-          visual.innerHTML = '<div style="font-size:12px; color:var(--text-soft);">Nenhum dado encontrado.</div>';
+        if (!locations.length || totalDone === 0) {
+          visual.innerHTML = `
+            <div style="font-size:12px; color:var(--text-soft);">
+              Nenhuma preventiva realizada no período selecionado.
+            </div>
+          `;
           return;
         }
-        const values = arr.map(a => a.total ?? a._count?._all ?? 0);
-        const max = Math.max(...values, 1);
 
-        let titleLabel = "";
-        let fieldKey = "";
-        if (type === "by-location") {
-          titleLabel = "Localização";
-          fieldKey = "location";
-        } else if (type === "by-os") {
-          titleLabel = "Sistema operacional";
-          fieldKey = "os";
-        } else {
-          titleLabel = "Fabricante";
-          fieldKey = "manufacturer";
-        }
-
-        const bars = arr.map(row => {
-          const label = row[fieldKey] || "Não informado";
-          const val = row.total ?? row._count?._all ?? 0;
-          const perc = Math.round((val / max) * 100);
+        const max = Math.max(...locations.map(l => l.count || 0));
+        const bars = locations.map(loc => {
+          const label = loc.location || "Não informado";
+          const val = loc.count || 0;
+          const perc = max ? Math.round((val / max) * 100) : 0;
           return `
             <div class="bar-row">
               <div class="bar-label" title="${label}">${label}</div>
@@ -2907,67 +2822,106 @@ function exportReportPdf() {
               <div class="bar-value">${val}</div>
             </div>
           `;
-        }).join('');
+        }).join("");
 
         visual.innerHTML = `
-          <div style="font-size:12px; color:var(--text-soft); margin-bottom:4px;">
-            Top ${arr.length} agrupado por <strong>${titleLabel}</strong>.
-          </div>
-          <div>
-            ${bars}
-          </div>
-        `;
-        return;
-      }
-
-      if (type === "no-next-date") {
-        const total = data.total ?? (data.data ? data.data.length : 0);
-        const list = Array.isArray(data.data) ? data.data : [];
-        const first = list.slice(0, 30);
-
-        const rows = first.map(c => `
-          <tr>
-            <td>${c.id}</td>
-            <td>${c.name}</td>
-            <td>${c.location || ""}</td>
-            <td>${c.os || ""}</td>
-            <td>${c.manufacturer || ""}</td>
-            <td>${c.serialNumber || ""}</td>
-          </tr>
-        `).join('');
-
-        visual.innerHTML = `
-          <div class="report-card">
-            <div class="report-card-label">Máquinas sem próxima preventiva</div>
-            <div class="report-card-value">${total}</div>
-            <div class="report-card-note">
-              Listando abaixo até 30 registros para visualização rápida.
+          <div class="report-grid">
+            <div class="report-card">
+              <div class="report-card-label">Período</div>
+              <div class="report-card-value" style="font-size:13px;">${from} até ${until}</div>
+              <div class="report-card-note">Base para o agrupamento por localização</div>
+            </div>
+            <div class="report-card">
+              <div class="report-card-label">Total de preventivas realizadas</div>
+              <div class="report-card-value">${totalDone}</div>
+              <div class="report-card-note">Soma de todas as localizações</div>
             </div>
           </div>
-          <div class="report-table-wrapper">
-            <table>
-              <thead>
-                <tr>
-                  <th style="width:50px;">ID</th>
-                  <th>Nome</th>
-                  <th>Localização</th>
-                  <th>SO</th>
-                  <th>Fabricante</th>
-                  <th>Nº Série</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${rows}
-              </tbody>
-            </table>
+
+          <div style="margin-top:16px;">
+            <div style="font-size:12px; color:var(--text-soft); margin-bottom:4px;">
+              Distribuição de preventivas realizadas por localização
+            </div>
+            <div>
+              ${bars}
+            </div>
           </div>
         `;
         return;
       }
 
-      // fallback
-      visual.innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+      if (type === "period-done-vs-overdue") {
+        const total = data.totalComputers ?? 0;
+        const done = data.doneInPeriod ?? 0;
+        const overdue = data.overdueInPeriod ?? 0;
+        const notDone = data.notDoneInPeriod ?? 0;
+
+        const sum = done + overdue + Math.max(notDone, 0);
+        const donePct = sum ? Math.round((done / sum) * 100) : 0;
+        const overduePct = sum ? Math.round((overdue / sum) * 100) : 0;
+        const notDonePct = sum ? Math.round((Math.max(notDone, 0) / sum) * 100) : 0;
+
+        visual.innerHTML = `
+          <div class="report-grid">
+            <div class="report-card">
+              <div class="report-card-label">Período</div>
+              <div class="report-card-value" style="font-size:13px;">${from} até ${until}</div>
+              <div class="report-card-note">Considerando datas de última e próxima preventiva</div>
+            </div>
+            <div class="report-card">
+              <div class="report-card-label">Total de computadores</div>
+              <div class="report-card-value">${total}</div>
+              <div class="report-card-note">Base para análise de vencimento</div>
+            </div>
+            <div class="report-card">
+              <div class="report-card-label">Realizadas no período</div>
+              <div class="report-card-value">${done}</div>
+              <div class="report-card-note">Última preventiva dentro do período</div>
+            </div>
+            <div class="report-card">
+              <div class="report-card-label">Vencidas no período</div>
+              <div class="report-card-value" style="color:var(--danger);">${overdue}</div>
+              <div class="report-card-note">Próxima preventiva vencida dentro do período</div>
+            </div>
+          </div>
+
+          <div style="margin-top:16px;">
+            <div style="font-size:12px; color:var(--text-soft); margin-bottom:4px;">
+              Distribuição percentual (realizadas, vencidas e não realizadas)
+            </div>
+            <div class="bar-row">
+              <div class="bar-label">Realizadas</div>
+              <div class="bar-track">
+                <div class="bar-fill" style="width:${donePct}%;"></div>
+              </div>
+              <div class="bar-value">${donePct}%</div>
+            </div>
+            <div class="bar-row">
+              <div class="bar-label">Vencidas</div>
+              <div class="bar-track">
+                <div class="bar-fill" style="width:${overduePct}%;"></div>
+              </div>
+              <div class="bar-value">${overduePct}%</div>
+            </div>
+            <div class="bar-row">
+              <div class="bar-label">Não realizadas no período</div>
+              <div class="bar-track">
+                <div class="bar-fill" style="width:${notDonePct}%;"></div>
+              </div>
+              <div class="bar-value">${notDonePct}%</div>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      visual.innerHTML = `
+        <div style="font-size:12px; color:var(--text-soft);">
+          Nenhum visual configurado para este tipo de relatório.
+        </div>
+      `;
     }
+
   
     // ===== Helpers globais for relatório % por localização =====
     window.parsePtDateToJs = window.parsePtDateToJs || function parsePtDateToJs(dateStr) {
