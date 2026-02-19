@@ -600,7 +600,7 @@
       <div class="brand-logo">IT</div>
       <div>
         <div class="brand-text-title">Sistema de Preventiva</div>
-        <div class="brand-text-sub">Controle de manutenções de computadores • <span id="indexVersionBadge" style="color:#38bdf8;font-weight:600;">v3-pctloc-v4-20260218195142</span></div>
+        <div class="brand-text-sub">Controle de manutenções de computadores • <span id="indexVersionBadge" style="color:#38bdf8;font-weight:600;">v3-pctloc-v6-inline-20260219114205</span></div>
       </div>
     </div>
 
@@ -1176,7 +1176,7 @@
 
   <script>
 // ====== CONFIG API ======
-    const INDEX_VERSION = 'v3-pctloc-v4-20260218195142';
+    const INDEX_VERSION = 'v3-pctloc-v6-inline-20260219114205';
     console.log('Loaded index version:', INDEX_VERSION);
 
     const API_BASE = "https://prev-l0mb.onrender.com/api";
@@ -2412,31 +2412,7 @@
         }
         return;
       }
-
-
-      // ✅ % preventivas realizadas por localização (ANUAL - ano atual) - FRONTEND
-      if (type === "pct-done-by-location") {
-        try {
-          const list = await fetchAllComputersForReports();
-          const year = new Date().getFullYear();
-          const result = window.computePctDoneByLocationAnnual(list, year);
-
-          lastReportJson = result;
-          lastReportType = "pct-done-by-location";
-
-          const jsonEl = document.getElementById('reportJson');
-          if (jsonEl) jsonEl.textContent = JSON.stringify(result, null, 2);
-
-          renderReportVisual("pct-done-by-location", result);
-          showToast("Relatório gerado.", "success");
-        } catch (err) {
-          console.error(err);
-          showToast("Erro ao gerar relatório anual por localização.", "error");
-        }
-        return;
-      }
-
-      // Padrão: busca do backend
+// Padrão: busca do backend
       const params = new URLSearchParams();
       params.append('type', type);
       if (until) params.append('until', until);
@@ -2791,6 +2767,64 @@ function exportReportPdf() {
       // fallback
       visual.innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
     }
+  
+    // ===== Helpers globais for relatório % por localização =====
+    window.parsePtDateToJs = window.parsePtDateToJs || function parsePtDateToJs(dateStr) {
+      if (!dateStr) return null;
+      if (typeof dateStr !== "string") {
+        const d = new Date(dateStr);
+        return isNaN(d.getTime()) ? null : d;
+      }
+      const s = dateStr.trim();
+      if (!s) return null;
+
+      if (s.includes("/")) {
+        const parts = s.split("/");
+        if (parts.length === 3) {
+          const dd = Number(parts[0]);
+          const mm = Number(parts[1]);
+          const yyyy = Number(parts[2]);
+          const d = new Date(yyyy, mm - 1, dd, 0, 0, 0);
+          return isNaN(d.getTime()) ? null : d;
+        }
+      }
+
+      const d = new Date(s.includes("T") ? s : (s + "T00:00:00"));
+      return isNaN(d.getTime()) ? null : d;
+    };
+
+    window.computePctDoneByLocationAnnual = function computePctDoneByLocationAnnual(list, year) {
+      const start = new Date(year, 0, 1, 0, 0, 0);
+      const end = new Date(year + 1, 0, 1, 0, 0, 0);
+
+      const counts = {};
+      let totalDone = 0;
+
+      (list || []).forEach(pc => {
+        const locRaw = (pc.localizacao || "").trim();
+        const location = locRaw || "Não informado";
+
+        const lastStr = pc.dataUltimaPreventiva;
+        const lastDt = window.parsePtDateToJs(lastStr);
+        if (!lastDt) return;
+
+        if (lastDt >= start && lastDt < end) {
+          counts[location] = (counts[location] || 0) + 1;
+          totalDone++;
+        }
+      });
+
+      const locations = Object.entries(counts)
+        .map(([location, count]) => ({
+          location,
+          count,
+          pct: totalDone ? Math.round((count / totalDone) * 1000) / 10 : 0
+        }))
+        .sort((a, b) => b.count - a.count);
+
+      return { year, totalDone, locations };
+    };
+
   </script>
 </body>
 </html>
